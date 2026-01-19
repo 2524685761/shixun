@@ -33,6 +33,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import UserManagement from "@/pages/admin/UserManagement";
 import CourseManagement from "@/pages/admin/CourseManagement";
 import Statistics from "@/pages/admin/Statistics";
+import AdminSettings from "@/pages/admin/Settings";
 
 import NotFound from "@/pages/NotFound";
 
@@ -203,8 +204,17 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <AdminSettings />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      {/* 个人资料页面 - 所有角色可访问 */}
       <Route
         path="/profile"
         element={

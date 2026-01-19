@@ -178,92 +178,89 @@ export default function CheckIn() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* 页面标题 */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ClipboardCheck className="h-6 w-6 text-primary" />
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-safe">
+      {/* 页面标题 - 移动端优化 */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <ClipboardCheck className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           实训打卡
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm md:text-base text-muted-foreground">
           {format(new Date(), 'yyyy年MM月dd日 EEEE', { locale: zhCN })}
         </p>
       </div>
 
-      {/* 今日任务列表 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+      {/* 今日任务列表 - 移动端优化 */}
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6 pb-3 md:pb-4">
+          <CardTitle className="text-base md:text-lg flex items-center gap-2">
+            <Calendar className="h-4 w-4 md:h-5 md:w-5" />
             今日实训任务
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             {todayTasks.length > 0 
               ? `共 ${todayTasks.length} 个任务，已打卡 ${todayCheckIns.size} 个`
               : '今天没有安排实训任务'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           {todayTasks.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>今天没有实训任务安排</p>
-              <p className="text-sm mt-1">请查看最近的打卡记录</p>
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              <Calendar className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm md:text-base">今天没有实训任务安排</p>
+              <p className="text-xs md:text-sm mt-1">请查看最近的打卡记录</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {todayTasks.map((task) => {
                 const isCheckedIn = todayCheckIns.has(task.id);
                 
                 return (
                   <div 
                     key={task.id}
-                    className={`p-4 rounded-xl border transition-all ${
+                    className={`p-3 md:p-4 rounded-xl border transition-all ${
                       isCheckedIn 
                         ? 'bg-success/5 border-success/30' 
-                        : 'bg-card border-border hover:border-primary/50'
+                        : 'bg-card border-border hover:border-primary/50 active:scale-[0.99]'
                     }`}
                   >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg ${
-                            isCheckedIn ? 'bg-success/10' : 'bg-primary/10'
-                          }`}>
-                            {isCheckedIn ? (
-                              <CheckCircle2 className="h-5 w-5 text-success" />
-                            ) : (
-                              <AlertCircle className="h-5 w-5 text-primary" />
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="font-medium">{task.name}</h3>
-                            <p className="text-sm text-muted-foreground mt-0.5">
-                              {task.course?.name} · {task.task_number}
-                            </p>
-                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                              {task.start_time && task.end_time && (
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {task.start_time.slice(0, 5)} - {task.end_time.slice(0, 5)}
-                                </span>
-                              )}
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-lg shrink-0 ${
+                          isCheckedIn ? 'bg-success/10' : 'bg-primary/10'
+                        }`}>
+                          {isCheckedIn ? (
+                            <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-success" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm md:text-base leading-tight">{task.name}</h3>
+                          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                            {task.course?.name} · {task.task_number}
+                          </p>
+                          {task.start_time && task.end_time && (
+                            <div className="flex items-center gap-1 mt-1.5 text-xs md:text-sm text-muted-foreground">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span>{task.start_time.slice(0, 5)} - {task.end_time.slice(0, 5)}</span>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                       
-                      <div>
+                      {/* 打卡按钮 - 移动端全宽 */}
+                      <div className="w-full">
                         {isCheckedIn ? (
-                          <Badge className="bg-success/10 text-success hover:bg-success/20 px-4 py-2">
-                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                          <Badge className="w-full justify-center bg-success/10 text-success hover:bg-success/20 px-4 py-2.5 text-sm">
+                            <CheckCircle2 className="h-4 w-4 mr-1.5" />
                             已打卡
                           </Badge>
                         ) : (
                           <Button 
                             onClick={() => handleCheckIn(task.id)}
                             disabled={checkingIn}
-                            className="gradient-primary text-white"
+                            className="w-full h-11 md:h-10 gradient-primary text-white text-sm md:text-base"
                           >
                             {checkingIn ? (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -283,45 +280,45 @@ export default function CheckIn() {
         </CardContent>
       </Card>
 
-      {/* 打卡历史 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <History className="h-5 w-5" />
+      {/* 打卡历史 - 移动端优化 */}
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6 pb-3 md:pb-4">
+          <CardTitle className="text-base md:text-lg flex items-center gap-2">
+            <History className="h-4 w-4 md:h-5 md:w-5" />
             最近打卡记录
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           {checkInRecords.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <History className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>暂无打卡记录</p>
+              <History className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm md:text-base">暂无打卡记录</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {checkInRecords.map((record) => (
                 <div 
                   key={record.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                  className="flex items-center justify-between p-2.5 md:p-3 rounded-lg bg-secondary/30"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <ClipboardCheck className="h-4 w-4 text-primary" />
+                  <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
+                    <div className="p-1.5 md:p-2 rounded-lg bg-primary/10 shrink-0">
+                      <ClipboardCheck className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{record.task?.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="min-w-0">
+                      <p className="font-medium text-xs md:text-sm truncate">{record.task?.name}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground">
                         {record.task?.task_number}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right flex items-center gap-3">
+                  <div className="text-right flex items-center gap-2 md:gap-3 shrink-0">
                     {getStatusBadge(record.status)}
                     <div>
-                      <p className="text-sm font-medium">
+                      <p className="text-xs md:text-sm font-medium">
                         {format(parseISO(record.check_in_time), 'HH:mm')}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] md:text-xs text-muted-foreground">
                         {format(parseISO(record.check_in_time), 'MM/dd')}
                       </p>
                     </div>
