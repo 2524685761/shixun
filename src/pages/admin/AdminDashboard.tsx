@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
 import { 
@@ -14,30 +16,129 @@ import {
   ClipboardCheck,
   Star,
   GraduationCap,
+  Loader2,
 } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalTeachers: 0,
+    totalCourses: 0,
+    totalTasks: 0,
+  });
+  const [overviewData, setOverviewData] = useState({
+    checkInRate: 0,
+    submissionRate: 0,
+    evaluationRate: 0,
+  });
 
-  // 模拟数据
-  const stats = {
-    totalStudents: 320,
-    totalTeachers: 15,
-    totalCourses: 8,
-    totalTasks: 45,
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      // 获取学生总数
+      const { count: studentCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'student');
+
+      // 获取教师总数
+      const { count: teacherCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'teacher');
+
+      // 获取课程总数
+      const { count: courseCount } = await supabase
+        .from('courses')
+        .select('*', { count: 'exact', head: true });
+
+      // 获取任务总数
+      const { count: taskCount } = await supabase
+        .from('training_tasks')
+        .select('*', { count: 'exact', head: true });
+
+      setStats({
+        totalStudents: studentCount || 0,
+        totalTeachers: teacherCount || 0,
+        totalCourses: courseCount || 0,
+        totalTasks: taskCount || 0,
+      });
+
+      // 计算本月数据概览
+      const startOfMonth = format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 'yyyy-MM-dd');
+      const today = format(new Date(), 'yyyy-MM-dd');
+
+      // 本月任务数和打卡数
+      const { data: monthTasks } = await supabase
+        .from('training_tasks')
+        .select('id')
+        .gte('scheduled_date', startOfMonth)
+        .lte('scheduled_date', today);
+
+      const monthTaskCount = monthTasks?.length || 0;
+
+      const { count: monthCheckIns } = await supabase
+        .from('check_ins')
+        .select('*', { count: 'exact', head: true })
+        .gte('check_in_time', `${startOfMonth}T00:00:00`);
+
+      // 计算打卡率（打卡数 / (任务数 * 学生数)）
+      const expectedCheckIns = monthTaskCount * (studentCount || 1);
+      const checkInRate = expectedCheckIns > 0 
+        ? Math.min(100, Math.round(((monthCheckIns || 0) / expectedCheckIns) * 100))
+        : 0;
+
+      // 成果提交率
+      const { count: totalSubmissions } = await supabase
+        .from('submissions')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', `${startOfMonth}T00:00:00`);
+
+      const submissionRate = expectedCheckIns > 0
+        ? Math.min(100, Math.round(((totalSubmissions || 0) / expectedCheckIns) * 100))
+        : 0;
+
+      // 评价完成率
+      const { count: pendingEvaluations } = await supabase
+        .from('submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      const { count: evaluatedSubmissions } = await supabase
+        .from('submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'evaluated');
+
+      const totalForEvaluation = (pendingEvaluations || 0) + (evaluatedSubmissions || 0);
+      const evaluationRate = totalForEvaluation > 0
+        ? Math.round(((evaluatedSubmissions || 0) / totalForEvaluation) * 100)
+        : 0;
+
+      setOverviewData({
+        checkInRate,
+        submissionRate,
+        evaluationRate,
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const overviewData = {
-    checkInRate: 96,
-    submissionRate: 89,
-    evaluationRate: 92,
-  };
-
-  const recentActivities = [
-    { type: 'user', text: '新增学生 张明', time: '5分钟前' },
-    { type: 'course', text: '创建课程 PLC编程实训', time: '1小时前' },
-    { type: 'task', text: '发布任务 电路焊接练习', time: '2小时前' },
-  ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -237,27 +338,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* 最近活动 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">最近活动</CardTitle>
-          <CardDescription>系统操作记录</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <div className="flex-1">
-                  <p className="text-sm">{activity.text}</p>
-                </div>
-                <span className="text-xs text-muted-foreground">{activity.time}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
