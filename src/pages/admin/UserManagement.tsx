@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { BatchImportUsers } from '@/components/admin/BatchImportUsers';
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ import {
   Check,
   X,
   Copy,
+  Upload,
 } from 'lucide-react';
 
 interface UserWithProfile {
@@ -136,6 +138,9 @@ export default function UserManagement() {
   });
   const [creating, setCreating] = useState(false);
   const [createdUser, setCreatedUser] = useState<{ email: string; password: string } | null>(null);
+  
+  // 批量导入
+  const [showBatchImport, setShowBatchImport] = useState(false);
 
   const passwordStrength = useMemo(() => checkPasswordStrength(createForm.password), [createForm.password]);
 
@@ -362,7 +367,7 @@ export default function UserManagement() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Users className="h-6 w-6 text-primary" />
@@ -372,10 +377,16 @@ export default function UserManagement() {
             管理系统用户账号和权限
           </p>
         </div>
-        <Button onClick={handleOpenCreateDialog} className="gradient-primary text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          添加用户
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowBatchImport(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            批量导入
+          </Button>
+          <Button onClick={handleOpenCreateDialog} className="gradient-primary text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            添加用户
+          </Button>
+        </div>
       </div>
 
       {/* 统计卡片 */}
@@ -815,6 +826,13 @@ export default function UserManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* 批量导入弹窗 */}
+      <BatchImportUsers
+        open={showBatchImport}
+        onOpenChange={setShowBatchImport}
+        onSuccess={fetchUsers}
+      />
     </div>
   );
 }
