@@ -19,6 +19,9 @@ import StudentEvaluations from "@/pages/student/Evaluations";
 
 // Teacher Pages
 import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
+import Attendance from "@/pages/teacher/Attendance";
+import TeacherEvaluations from "@/pages/teacher/Evaluations";
+import Templates from "@/pages/teacher/Templates";
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -119,11 +122,31 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/teacher/*"
+        path="/teacher/attendance"
         element={
           <ProtectedRoute allowedRoles={['teacher']}>
             <DashboardLayout>
-              <TeacherDashboard />
+              <Attendance />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/evaluations"
+        element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <DashboardLayout>
+              <TeacherEvaluations />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/templates"
+        element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <DashboardLayout>
+              <Templates />
             </DashboardLayout>
           </ProtectedRoute>
         }
