@@ -25,6 +25,9 @@ import Templates from "@/pages/teacher/Templates";
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import UserManagement from "@/pages/admin/UserManagement";
+import CourseManagement from "@/pages/admin/CourseManagement";
+import Statistics from "@/pages/admin/Statistics";
 
 import NotFound from "@/pages/NotFound";
 
@@ -164,11 +167,31 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/admin/*"
+        path="/admin/users"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <DashboardLayout>
-              <AdminDashboard />
+              <UserManagement />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/courses"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <CourseManagement />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/statistics"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <Statistics />
             </DashboardLayout>
           </ProtectedRoute>
         }
