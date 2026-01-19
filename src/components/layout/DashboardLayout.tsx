@@ -191,7 +191,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>我的账号</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <User className="mr-2 h-4 w-4" />
                 个人资料
               </DropdownMenuItem>
@@ -223,7 +223,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>我的账号</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <User className="mr-2 h-4 w-4" />
                 个人资料
               </DropdownMenuItem>

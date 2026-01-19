@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { FileUpload } from '@/components/FileUpload';
+import { FilePreview } from '@/components/FilePreview';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +36,7 @@ import {
   Loader2,
   Eye,
   Calendar,
+  Paperclip,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -51,6 +54,7 @@ interface TrainingTask {
 interface Submission {
   id: string;
   content: string | null;
+  file_urls: string[] | null;
   status: string;
   submitted_at: string;
   task: {
@@ -76,6 +80,7 @@ export default function Submissions() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string>('');
   const [content, setContent] = useState('');
+  const [fileUrls, setFileUrls] = useState<string[]>([]);
   const [viewingSubmission, setViewingSubmission] = useState<Submission | null>(null);
 
   useEffect(() => {
@@ -110,6 +115,7 @@ export default function Submissions() {
         .select(`
           id,
           content,
+          file_urls,
           status,
           submitted_at,
           task:training_tasks(
@@ -154,8 +160,13 @@ export default function Submissions() {
   };
 
   const handleSubmit = async () => {
-    if (!user?.id || !selectedTask || !content.trim()) {
-      toast.error('请选择任务并填写成果内容');
+    if (!user?.id || !selectedTask) {
+      toast.error('请选择任务');
+      return;
+    }
+
+    if (!content.trim() && fileUrls.length === 0) {
+      toast.error('请填写成果内容或上传文件');
       return;
     }
 
@@ -166,7 +177,8 @@ export default function Submissions() {
         .insert({
           user_id: user.id,
           task_id: selectedTask,
-          content: content.trim(),
+          content: content.trim() || null,
+          file_urls: fileUrls.length > 0 ? fileUrls : null,
           status: 'pending',
         });
 
@@ -176,6 +188,7 @@ export default function Submissions() {
       setDialogOpen(false);
       setSelectedTask('');
       setContent('');
+      setFileUrls([]);
       fetchData();
     } catch (error: any) {
       console.error('Submit error:', error);
@@ -252,7 +265,7 @@ export default function Submissions() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
               <div className="space-y-2">
                 <Label htmlFor="task">选择任务 *</Label>
                 <Select value={selectedTask} onValueChange={setSelectedTask}>
@@ -281,7 +294,7 @@ export default function Submissions() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="content">成果描述 *</Label>
+                <Label htmlFor="content">成果描述</Label>
                 <Textarea
                   id="content"
                   placeholder="请描述您完成本次实训任务的过程和成果..."
@@ -294,15 +307,34 @@ export default function Submissions() {
                   详细描述您的实训过程、遇到的问题及解决方法
                 </p>
               </div>
+
+              {/* 文件上传 */}
+              {user?.id && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4" />
+                    上传附件
+                  </Label>
+                  <FileUpload
+                    userId={user.id}
+                    onFilesChange={setFileUrls}
+                    existingFiles={fileUrls}
+                    maxFiles={5}
+                  />
+                </div>
+              )}
             </div>
             
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              <Button variant="outline" onClick={() => {
+                setDialogOpen(false);
+                setFileUrls([]);
+              }}>
                 取消
               </Button>
               <Button 
                 onClick={handleSubmit}
-                disabled={submitting || !selectedTask || !content.trim()}
+                disabled={submitting || !selectedTask || (!content.trim() && fileUrls.length === 0)}
                 className="gradient-primary text-white"
               >
                 {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -397,9 +429,17 @@ export default function Submissions() {
                         <p className="text-sm text-muted-foreground mt-0.5">
                           {submission.task?.course?.name} · {submission.task?.task_number}
                         </p>
-                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                          {submission.content}
-                        </p>
+                        {submission.content && (
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                            {submission.content}
+                          </p>
+                        )}
+                        {submission.file_urls && submission.file_urls.length > 0 && (
+                          <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
+                            <Paperclip className="h-4 w-4" />
+                            <span>{submission.file_urls.length} 个附件</span>
+                          </div>
+                        )}
                         {submission.evaluation && (
                           <div className="mt-2 p-2 rounded-lg bg-success/5 border border-success/20">
                             <div className="flex items-center gap-2">
@@ -448,13 +488,24 @@ export default function Submissions() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-muted-foreground">提交内容</Label>
-              <div className="mt-2 p-3 rounded-lg bg-secondary/50">
-                {viewingSubmission?.content}
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            {viewingSubmission?.content && (
+              <div>
+                <Label className="text-muted-foreground">提交内容</Label>
+                <div className="mt-2 p-3 rounded-lg bg-secondary/50 whitespace-pre-wrap">
+                  {viewingSubmission.content}
+                </div>
               </div>
-            </div>
+            )}
+
+            {viewingSubmission?.file_urls && viewingSubmission.file_urls.length > 0 && (
+              <div>
+                <Label className="text-muted-foreground">附件文件</Label>
+                <div className="mt-2 p-3 rounded-lg bg-secondary/50">
+                  <FilePreview urls={viewingSubmission.file_urls} />
+                </div>
+              </div>
+            )}
             
             <div>
               <Label className="text-muted-foreground">提交时间</Label>

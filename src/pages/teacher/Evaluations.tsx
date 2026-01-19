@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { FilePreview } from '@/components/FilePreview';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ import {
   Send,
   Users,
   FileText,
+  Paperclip,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -43,6 +45,7 @@ import { zhCN } from 'date-fns/locale';
 interface Submission {
   id: string;
   content: string | null;
+  file_urls: string[] | null;
   status: string;
   submitted_at: string;
   user_id: string;
@@ -98,6 +101,7 @@ export default function TeacherEvaluations() {
         .select(`
           id,
           content,
+          file_urls,
           status,
           submitted_at,
           user_id,
@@ -477,12 +481,26 @@ export default function TeacherEvaluations() {
           
           <div className="space-y-6 py-4">
             {/* 成果内容 */}
-            <div>
-              <Label className="text-muted-foreground">提交内容</Label>
-              <div className="mt-2 p-4 rounded-lg bg-secondary/50 max-h-[200px] overflow-y-auto">
-                {evaluatingSubmission?.content || '无内容'}
+            {evaluatingSubmission?.content && (
+              <div>
+                <Label className="text-muted-foreground">提交内容</Label>
+                <div className="mt-2 p-4 rounded-lg bg-secondary/50 max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+                  {evaluatingSubmission.content}
+                </div>
               </div>
-            </div>
+            )}
+
+            {evaluatingSubmission?.file_urls && evaluatingSubmission.file_urls.length > 0 && (
+              <div>
+                <Label className="text-muted-foreground flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  附件文件 ({evaluatingSubmission.file_urls.length})
+                </Label>
+                <div className="mt-2 p-4 rounded-lg bg-secondary/50">
+                  <FilePreview urls={evaluatingSubmission.file_urls} />
+                </div>
+              </div>
+            )}
 
             {evaluatingSubmission?.status === 'pending' && (
               <>
