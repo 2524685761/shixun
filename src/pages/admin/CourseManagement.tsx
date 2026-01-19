@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -39,6 +40,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { 
   BookOpen, 
   Plus,
@@ -49,6 +56,10 @@ import {
   GraduationCap,
   ClipboardList,
   Calendar,
+  UserCog,
+  Users,
+  Link,
+  Unlink,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -77,14 +88,36 @@ interface Task {
   end_time: string | null;
 }
 
+interface Teacher {
+  id: string;
+  full_name: string;
+  employee_id: string | null;
+  assignedCourseIds: string[];
+}
+
+interface Student {
+  id: string;
+  full_name: string;
+  student_id: string | null;
+  assignedMajorIds: string[];
+}
+
 export default function CourseManagement() {
   const [loading, setLoading] = useState(true);
   const [majors, setMajors] = useState<Major[]>([]);
+  const [activeTab, setActiveTab] = useState('courses');
+  
+  // Teachers and Students
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [allCourses, setAllCourses] = useState<{ id: string; name: string; majorName: string }[]>([]);
   
   // Dialog states
   const [majorDialogOpen, setMajorDialogOpen] = useState(false);
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [teacherAssignDialogOpen, setTeacherAssignDialogOpen] = useState(false);
+  const [studentAssignDialogOpen, setStudentAssignDialogOpen] = useState(false);
   
   // Edit states
   const [editingMajor, setEditingMajor] = useState<Major | null>(null);
@@ -92,6 +125,10 @@ export default function CourseManagement() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedMajorId, setSelectedMajorId] = useState<string>('');
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+  const [selectedMajorIds, setSelectedMajorIds] = useState<string[]>([]);
   
   // Form states
   const [majorForm, setMajorForm] = useState({ name: '', description: '' });
@@ -150,11 +187,97 @@ export default function CourseManagement() {
       }));
 
       setMajors(majorsWithCourses);
+      
+      // 构建课程列表（带专业名称）
+      const coursesWithMajor = (coursesData || []).map(course => {
+        const major = majorsData?.find(m => m.id === course.major_id);
+        return {
+          id: course.id,
+          name: course.name,
+          majorName: major?.name || '未分类',
+        };
+      });
+      setAllCourses(coursesWithMajor);
+      
+      // 获取教师和学生
+      await fetchTeachersAndStudents();
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('获取数据失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTeachersAndStudents = async () => {
+    try {
+      // 获取教师角色的用户
+      const { data: teacherRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'teacher');
+      
+      const teacherIds = teacherRoles?.map(r => r.user_id) || [];
+      
+      // 获取学生角色的用户
+      const { data: studentRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'student');
+      
+      const studentIds = studentRoles?.map(r => r.user_id) || [];
+      
+      // 获取教师资料
+      if (teacherIds.length > 0) {
+        const { data: teacherProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, employee_id')
+          .in('user_id', teacherIds);
+        
+        // 获取教师-课程关联
+        const { data: teacherCourses } = await supabase
+          .from('teacher_courses')
+          .select('user_id, course_id')
+          .in('user_id', teacherIds);
+        
+        const teacherData: Teacher[] = (teacherProfiles || []).map(p => ({
+          id: p.user_id,
+          full_name: p.full_name,
+          employee_id: p.employee_id,
+          assignedCourseIds: (teacherCourses || [])
+            .filter(tc => tc.user_id === p.user_id)
+            .map(tc => tc.course_id),
+        }));
+        
+        setTeachers(teacherData);
+      }
+      
+      // 获取学生资料
+      if (studentIds.length > 0) {
+        const { data: studentProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, student_id')
+          .in('user_id', studentIds);
+        
+        // 获取学生-专业关联
+        const { data: studentMajors } = await supabase
+          .from('student_majors')
+          .select('user_id, major_id')
+          .in('user_id', studentIds);
+        
+        const studentData: Student[] = (studentProfiles || []).map(p => ({
+          id: p.user_id,
+          full_name: p.full_name,
+          student_id: p.student_id,
+          assignedMajorIds: (studentMajors || [])
+            .filter(sm => sm.user_id === p.user_id)
+            .map(sm => sm.major_id),
+        }));
+        
+        setStudents(studentData);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers and students:', error);
     }
   };
 
@@ -352,6 +475,104 @@ export default function CourseManagement() {
     }
   };
 
+  // Teacher assignment handlers
+  const openTeacherAssignDialog = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setSelectedCourseIds(teacher.assignedCourseIds);
+    setTeacherAssignDialogOpen(true);
+  };
+
+  const saveTeacherAssignment = async () => {
+    if (!selectedTeacher) return;
+    
+    setSaving(true);
+    try {
+      // 删除旧的分配
+      await supabase
+        .from('teacher_courses')
+        .delete()
+        .eq('user_id', selectedTeacher.id);
+      
+      // 插入新的分配
+      if (selectedCourseIds.length > 0) {
+        const { error } = await supabase
+          .from('teacher_courses')
+          .insert(
+            selectedCourseIds.map(courseId => ({
+              user_id: selectedTeacher.id,
+              course_id: courseId,
+            }))
+          );
+        if (error) throw error;
+      }
+      
+      toast.success('课程分配已更新');
+      setTeacherAssignDialogOpen(false);
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message || '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Student assignment handlers
+  const openStudentAssignDialog = (student: Student) => {
+    setSelectedStudent(student);
+    setSelectedMajorIds(student.assignedMajorIds);
+    setStudentAssignDialogOpen(true);
+  };
+
+  const saveStudentAssignment = async () => {
+    if (!selectedStudent) return;
+    
+    setSaving(true);
+    try {
+      // 删除旧的分配
+      await supabase
+        .from('student_majors')
+        .delete()
+        .eq('user_id', selectedStudent.id);
+      
+      // 插入新的分配
+      if (selectedMajorIds.length > 0) {
+        const { error } = await supabase
+          .from('student_majors')
+          .insert(
+            selectedMajorIds.map(majorId => ({
+              user_id: selectedStudent.id,
+              major_id: majorId,
+            }))
+          );
+        if (error) throw error;
+      }
+      
+      toast.success('专业分配已更新');
+      setStudentAssignDialogOpen(false);
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message || '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleCourseSelection = (courseId: string) => {
+    setSelectedCourseIds(prev => 
+      prev.includes(courseId) 
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
+    );
+  };
+
+  const toggleMajorSelection = (majorId: string) => {
+    setSelectedMajorIds(prev => 
+      prev.includes(majorId) 
+        ? prev.filter(id => id !== majorId)
+        : [...prev, majorId]
+    );
+  };
+
   const totalCourses = majors.reduce((acc, m) => acc + m.courses.length, 0);
   const totalTasks = majors.reduce((acc, m) => acc + m.courses.reduce((a, c) => a + c.tasks.length, 0), 0);
 
@@ -373,270 +594,446 @@ export default function CourseManagement() {
             课程管理
           </h1>
           <p className="text-muted-foreground mt-1">
-            管理专业、课程和实训任务
+            管理专业、课程、任务及人员分配
           </p>
         </div>
-        
-        <Button onClick={() => openMajorDialog()} className="gradient-primary text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          新建专业
-        </Button>
       </div>
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">专业数</p>
-                <p className="text-2xl font-bold mt-1">{majors.length}</p>
-              </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <GraduationCap className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tab 切换 */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="courses" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            课程任务
+          </TabsTrigger>
+          <TabsTrigger value="teachers" className="flex items-center gap-2">
+            <UserCog className="h-4 w-4" />
+            教师分配
+          </TabsTrigger>
+          <TabsTrigger value="students" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            学生分配
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">课程数</p>
-                <p className="text-2xl font-bold mt-1">{totalCourses}</p>
-              </div>
-              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-success" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* 课程任务 Tab */}
+        <TabsContent value="courses" className="space-y-6">
+          {/* 统计卡片 */}
+          <div className="grid grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">专业数</p>
+                    <p className="text-2xl font-bold mt-1">{majors.length}</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">任务数</p>
-                <p className="text-2xl font-bold mt-1">{totalTasks}</p>
-              </div>
-              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
-                <ClipboardList className="h-5 w-5 text-warning" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">课程数</p>
+                    <p className="text-2xl font-bold mt-1">{totalCourses}</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+                    <BookOpen className="h-5 w-5 text-success" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* 专业列表 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">专业与课程</CardTitle>
-          <CardDescription>点击展开查看课程和任务</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {majors.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>暂无专业数据</p>
-              <p className="text-sm mt-1">点击"新建专业"开始创建</p>
-            </div>
-          ) : (
-            <Accordion type="multiple" className="space-y-4">
-              {majors.map((major) => (
-                <AccordionItem key={major.id} value={major.id} className="border rounded-xl px-4">
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <GraduationCap className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="text-left">
-                        <p className="font-medium">{major.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {major.courses.length} 门课程
-                        </p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 space-y-4">
-                    {/* Major actions */}
-                    <div className="flex gap-2 pb-4 border-b">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => openMajorDialog(major)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        编辑专业
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => openCourseDialog(major.id)}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        添加课程
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-destructive">
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            删除
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">任务数</p>
+                    <p className="text-2xl font-bold mt-1">{totalTasks}</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                    <ClipboardList className="h-5 w-5 text-warning" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 新建专业按钮 */}
+          <div className="flex justify-end">
+            <Button onClick={() => openMajorDialog()} className="gradient-primary text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              新建专业
+            </Button>
+          </div>
+
+          {/* 专业列表 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">专业与课程</CardTitle>
+              <CardDescription>点击展开查看课程和任务</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {majors.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>暂无专业数据</p>
+                  <p className="text-sm mt-1">点击"新建专业"开始创建</p>
+                </div>
+              ) : (
+                <Accordion type="multiple" className="space-y-4">
+                  {majors.map((major) => (
+                    <AccordionItem key={major.id} value={major.id} className="border rounded-xl px-4">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <GraduationCap className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium">{major.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {major.courses.length} 门课程
+                            </p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-4 space-y-4">
+                        {/* Major actions */}
+                        <div className="flex gap-2 pb-4 border-b">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openMajorDialog(major)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            编辑专业
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>确认删除</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              删除专业将同时删除其下所有课程和任务，此操作无法撤销。
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>取消</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteMajor(major.id)}
-                              className="bg-destructive text-destructive-foreground"
-                            >
-                              删除
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openCourseDialog(major.id)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            添加课程
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-destructive">
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                删除
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>确认删除</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  删除专业将同时删除其下所有课程和任务，此操作无法撤销。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>取消</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteMajor(major.id)}
+                                  className="bg-destructive text-destructive-foreground"
+                                >
+                                  删除
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
 
-                    {/* Courses */}
-                    {major.courses.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-4">暂无课程</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {major.courses.map((course) => (
-                          <div key={course.id} className="border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-success" />
-                                <span className="font-medium">{course.name}</span>
-                                <Badge variant="outline">{course.tasks.length} 个任务</Badge>
-                              </div>
-                              <div className="flex gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => openCourseDialog(major.id, course)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => openTaskDialog(course.id)}
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
+                        {/* Courses */}
+                        {major.courses.length === 0 ? (
+                          <p className="text-sm text-muted-foreground py-4">暂无课程</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {major.courses.map((course) => (
+                              <div key={course.id} className="border rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <BookOpen className="h-4 w-4 text-success" />
+                                    <span className="font-medium">{course.name}</span>
+                                    <Badge variant="outline">{course.tasks.length} 个任务</Badge>
+                                  </div>
+                                  <div className="flex gap-1">
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
-                                      className="h-8 w-8 text-destructive"
+                                      className="h-8 w-8"
+                                      onClick={() => openCourseDialog(major.id, course)}
                                     >
-                                      <Trash2 className="h-4 w-4" />
+                                      <Edit className="h-4 w-4" />
                                     </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>确认删除</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        删除课程将同时删除其下所有任务。
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>取消</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => deleteCourse(course.id)}
-                                        className="bg-destructive text-destructive-foreground"
-                                      >
-                                        删除
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </div>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => openTaskDialog(course.id)}
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon"
+                                          className="h-8 w-8 text-destructive"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>确认删除</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            删除课程将同时删除其下所有任务。
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>取消</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => deleteCourse(course.id)}
+                                            className="bg-destructive text-destructive-foreground"
+                                          >
+                                            删除
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </div>
+                                </div>
 
-                            {/* Tasks */}
-                            {course.tasks.length > 0 && (
-                              <div className="space-y-2 pl-6">
-                                {course.tasks.map((task) => (
-                                  <div 
-                                    key={task.id}
-                                    className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 text-sm"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                                      <span>{task.name}</span>
-                                      <Badge variant="secondary" className="text-xs">
-                                        {task.task_number}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-muted-foreground text-xs flex items-center gap-1">
-                                        <Calendar className="h-3 w-3" />
-                                        {task.scheduled_date}
-                                      </span>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => openTaskDialog(course.id, task)}
+                                {/* Tasks */}
+                                {course.tasks.length > 0 && (
+                                  <div className="space-y-2 pl-6">
+                                    {course.tasks.map((task) => (
+                                      <div 
+                                        key={task.id}
+                                        className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 text-sm"
                                       >
-                                        <Edit className="h-3 w-3" />
-                                      </Button>
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
+                                        <div className="flex items-center gap-2">
+                                          <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                                          <span>{task.name}</span>
+                                          <Badge variant="secondary" className="text-xs">
+                                            {task.task_number}
+                                          </Badge>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-muted-foreground text-xs flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {task.scheduled_date}
+                                          </span>
                                           <Button 
                                             variant="ghost" 
                                             size="icon"
-                                            className="h-6 w-6 text-destructive"
+                                            className="h-6 w-6"
+                                            onClick={() => openTaskDialog(course.id, task)}
                                           >
-                                            <Trash2 className="h-3 w-3" />
+                                            <Edit className="h-3 w-3" />
                                           </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>确认删除</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              确定要删除此任务吗？
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel>取消</AlertDialogCancel>
-                                            <AlertDialogAction
-                                              onClick={() => deleteTask(task.id)}
-                                              className="bg-destructive text-destructive-foreground"
-                                            >
-                                              删除
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    </div>
+                                          <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                className="h-6 w-6 text-destructive"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                              <AlertDialogHeader>
+                                                <AlertDialogTitle>确认删除</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                  确定要删除此任务吗？
+                                                </AlertDialogDescription>
+                                              </AlertDialogHeader>
+                                              <AlertDialogFooter>
+                                                <AlertDialogCancel>取消</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                  onClick={() => deleteTask(task.id)}
+                                                  className="bg-destructive text-destructive-foreground"
+                                                >
+                                                  删除
+                                                </AlertDialogAction>
+                                              </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                          </AlertDialog>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
+                                )}
                               </div>
-                            )}
+                            ))}
                           </div>
-                        ))}
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 教师分配 Tab */}
+        <TabsContent value="teachers" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <UserCog className="h-5 w-5 text-primary" />
+                教师课程分配
+              </CardTitle>
+              <CardDescription>
+                为教师分配可评价的课程，教师只能查看和评价已分配课程的学生成果
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {teachers.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <UserCog className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>暂无教师数据</p>
+                  <p className="text-sm mt-1">请先在用户管理中添加教师</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {teachers.map((teacher) => (
+                    <div 
+                      key={teacher.id}
+                      className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                    >
+                      <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+                        <span className="text-lg font-medium text-success">
+                          {teacher.full_name?.slice(0, 1) || '?'}
+                        </span>
                       </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-        </CardContent>
-      </Card>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium">{teacher.full_name}</p>
+                          {teacher.employee_id && (
+                            <Badge variant="outline">工号: {teacher.employee_id}</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {teacher.assignedCourseIds.length === 0 ? (
+                            <span className="text-sm text-muted-foreground">未分配课程</span>
+                          ) : (
+                            <>
+                              <Badge className="bg-primary/10 text-primary">
+                                {teacher.assignedCourseIds.length} 门课程
+                              </Badge>
+                              {teacher.assignedCourseIds.slice(0, 3).map(courseId => {
+                                const course = allCourses.find(c => c.id === courseId);
+                                return course ? (
+                                  <Badge key={courseId} variant="secondary" className="text-xs">
+                                    {course.name}
+                                  </Badge>
+                                ) : null;
+                              })}
+                              {teacher.assignedCourseIds.length > 3 && (
+                                <span className="text-xs text-muted-foreground">
+                                  +{teacher.assignedCourseIds.length - 3} 更多
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        variant="outline"
+                        onClick={() => openTeacherAssignDialog(teacher)}
+                      >
+                        <Link className="h-4 w-4 mr-2" />
+                        分配课程
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 学生分配 Tab */}
+        <TabsContent value="students" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                学生专业分配
+              </CardTitle>
+              <CardDescription>
+                为学生分配专业，学生只能看到所属专业下的课程和实训任务
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {students.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>暂无学生数据</p>
+                  <p className="text-sm mt-1">请先在用户管理中添加学生</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {students.map((student) => (
+                    <div 
+                      key={student.id}
+                      className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                    >
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-lg font-medium text-primary">
+                          {student.full_name?.slice(0, 1) || '?'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium">{student.full_name}</p>
+                          {student.student_id && (
+                            <Badge variant="outline">学号: {student.student_id}</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {student.assignedMajorIds.length === 0 ? (
+                            <span className="text-sm text-muted-foreground">未分配专业</span>
+                          ) : (
+                            <>
+                              {student.assignedMajorIds.map(majorId => {
+                                const major = majors.find(m => m.id === majorId);
+                                return major ? (
+                                  <Badge key={majorId} className="bg-primary/10 text-primary">
+                                    {major.name}
+                                  </Badge>
+                                ) : null;
+                              })}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        variant="outline"
+                        onClick={() => openStudentAssignDialog(student)}
+                      >
+                        <Link className="h-4 w-4 mr-2" />
+                        分配专业
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Major Dialog */}
       <Dialog open={majorDialogOpen} onOpenChange={setMajorDialogOpen}>
@@ -774,6 +1171,98 @@ export default function CourseManagement() {
             <Button onClick={saveTask} disabled={saving} className="gradient-primary text-white">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Teacher Assignment Dialog */}
+      <Dialog open={teacherAssignDialogOpen} onOpenChange={setTeacherAssignDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>分配课程给 {selectedTeacher?.full_name}</DialogTitle>
+            <DialogDescription>
+              选择该教师可以评价的课程
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[400px] overflow-y-auto">
+            {allCourses.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">暂无课程，请先创建课程</p>
+            ) : (
+              <div className="space-y-3">
+                {majors.map(major => (
+                  <div key={major.id}>
+                    <p className="font-medium text-sm text-muted-foreground mb-2">{major.name}</p>
+                    <div className="space-y-2 pl-4">
+                      {major.courses.map(course => (
+                        <div 
+                          key={course.id}
+                          className="flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer"
+                          onClick={() => toggleCourseSelection(course.id)}
+                        >
+                          <Checkbox 
+                            checked={selectedCourseIds.includes(course.id)}
+                            onCheckedChange={() => toggleCourseSelection(course.id)}
+                          />
+                          <span>{course.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTeacherAssignDialogOpen(false)}>取消</Button>
+            <Button onClick={saveTeacherAssignment} disabled={saving} className="gradient-primary text-white">
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              保存分配
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Assignment Dialog */}
+      <Dialog open={studentAssignDialogOpen} onOpenChange={setStudentAssignDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>分配专业给 {selectedStudent?.full_name}</DialogTitle>
+            <DialogDescription>
+              选择该学生所属的专业
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[400px] overflow-y-auto">
+            {majors.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">暂无专业，请先创建专业</p>
+            ) : (
+              <div className="space-y-2">
+                {majors.map(major => (
+                  <div 
+                    key={major.id}
+                    className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-secondary/50 cursor-pointer"
+                    onClick={() => toggleMajorSelection(major.id)}
+                  >
+                    <Checkbox 
+                      checked={selectedMajorIds.includes(major.id)}
+                      onCheckedChange={() => toggleMajorSelection(major.id)}
+                    />
+                    <div>
+                      <p className="font-medium">{major.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {major.courses.length} 门课程
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStudentAssignDialogOpen(false)}>取消</Button>
+            <Button onClick={saveStudentAssignment} disabled={saving} className="gradient-primary text-white">
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              保存分配
             </Button>
           </DialogFooter>
         </DialogContent>
