@@ -13,6 +13,9 @@ import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 
+// Common Pages
+import ProfilePage from "@/pages/Profile";
+
 // Student Pages
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import CheckIn from "@/pages/student/CheckIn";
@@ -196,6 +199,18 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={['admin']}>
             <DashboardLayout>
               <Statistics />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 个人资料页面 - 所有角色可访问 */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
+            <DashboardLayout>
+              <ProfilePage />
             </DashboardLayout>
           </ProtectedRoute>
         }
