@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { Loader2, GraduationCap, Eye, EyeOff, Check, X } from 'lucide-react';
+import { registerFormSchema, validateForm } from '@/lib/validations';
 
 // 密码强度检查
 const checkPasswordStrength = (password: string) => {
@@ -42,6 +43,7 @@ export default function Register() {
   const [studentId, setStudentId] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -49,19 +51,20 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+
+    const validation = validateForm(registerFormSchema, { 
+      email, 
+      password, 
+      confirmPassword, 
+      fullName, 
+      studentId: studentId || undefined 
+    });
     
-    if (!email || !password || !fullName) {
-      toast.error('请填写所有必填项');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error('两次输入的密码不一致');
-      return;
-    }
-
-    if (password.length < 8) {
-      toast.error('密码长度至少8位');
+    if (validation.success === false) {
+      setErrors(validation.errors);
+      const firstError = Object.values(validation.errors)[0];
+      if (firstError) toast.error(firstError);
       return;
     }
 
@@ -72,17 +75,25 @@ export default function Register() {
 
     setLoading(true);
     
-    // 学生注册，角色固定为 student
-    const { error } = await signUp(email, password, fullName, 'student', studentId);
-    
-    if (error) {
-      toast.error('注册失败：' + error.message);
-      setLoading(false);
-      return;
-    }
+    try {
+      // 学生注册，角色固定为 student
+      const { error } = await signUp(email, password, fullName, 'student', studentId);
+      
+      if (error) {
+        const errorMessage = error.message.includes('already registered')
+          ? '该邮箱已被注册'
+          : '注册失败：' + error.message;
+        toast.error(errorMessage);
+        setLoading(false);
+        return;
+      }
 
-    toast.success('注册成功！请登录');
-    navigate('/login');
+      toast.success('注册成功！请登录');
+      navigate('/login');
+    } catch (err: any) {
+      toast.error('网络错误，请检查网络连接');
+      setLoading(false);
+    }
   };
 
   const strengthLabels = {
@@ -121,10 +132,14 @@ export default function Register() {
                 type="text"
                 placeholder="请输入真实姓名"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (errors.fullName) setErrors(prev => ({ ...prev, fullName: '' }));
+                }}
                 disabled={loading}
-                className="h-11"
+                className={`h-11 ${errors.fullName ? 'border-destructive' : ''}`}
               />
+              {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
             </div>
 
             <div className="space-y-2">
@@ -147,10 +162,14 @@ export default function Register() {
                 type="email"
                 placeholder="请输入邮箱"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                }}
                 disabled={loading}
-                className="h-11"
+                className={`h-11 ${errors.email ? 'border-destructive' : ''}`}
               />
+              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
             
             <div className="space-y-2">
