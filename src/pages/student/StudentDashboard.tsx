@@ -60,7 +60,38 @@ export default function StudentDashboard() {
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
 
-      // 获取今日任务
+      // 获取学生所属专业
+      const { data: studentMajorsData } = await supabase
+        .from('student_majors')
+        .select('major_id')
+        .eq('user_id', user.id);
+      
+      const majorIds = studentMajorsData?.map(sm => sm.major_id) || [];
+      
+      // 如果学生没有分配专业，显示空数据
+      if (majorIds.length === 0) {
+        setTodayTasks([]);
+        setStats({ totalTasks: 0, completedCheckIns: 0, pendingEvaluations: 0, averageScore: 0 });
+        setLoading(false);
+        return;
+      }
+
+      // 获取专业对应的课程
+      const { data: coursesData } = await supabase
+        .from('courses')
+        .select('id')
+        .in('major_id', majorIds);
+      
+      const courseIds = coursesData?.map(c => c.id) || [];
+      
+      if (courseIds.length === 0) {
+        setTodayTasks([]);
+        setStats({ totalTasks: 0, completedCheckIns: 0, pendingEvaluations: 0, averageScore: 0 });
+        setLoading(false);
+        return;
+      }
+
+      // 获取今日任务 - 只获取学生专业相关课程的任务
       const { data: tasksData } = await supabase
         .from('training_tasks')
         .select(`
@@ -71,7 +102,8 @@ export default function StudentDashboard() {
           end_time,
           course:courses(name)
         `)
-        .eq('scheduled_date', today);
+        .eq('scheduled_date', today)
+        .in('course_id', courseIds);
 
       // 获取今日打卡记录
       const { data: checkInsData } = await supabase
@@ -90,10 +122,11 @@ export default function StudentDashboard() {
       }));
       setTodayTasks(todayTasksWithStatus);
 
-      // 获取统计数据
+      // 获取统计数据 - 只统计学生专业相关的任务
       const { count: totalTasksCount } = await supabase
         .from('training_tasks')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .in('course_id', courseIds);
 
       const { count: completedCheckInsCount } = await supabase
         .from('check_ins')
