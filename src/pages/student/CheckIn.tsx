@@ -55,8 +55,40 @@ export default function CheckIn() {
   }, [user?.id]);
 
   const fetchTodayTasks = async () => {
+    if (!user?.id) return;
+    
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
+      
+      // 获取学生所属专业
+      const { data: studentMajorsData } = await supabase
+        .from('student_majors')
+        .select('major_id')
+        .eq('user_id', user.id);
+      
+      const majorIds = studentMajorsData?.map(sm => sm.major_id) || [];
+      
+      if (majorIds.length === 0) {
+        setTodayTasks([]);
+        setLoading(false);
+        return;
+      }
+
+      // 获取专业对应的课程
+      const { data: coursesData } = await supabase
+        .from('courses')
+        .select('id')
+        .in('major_id', majorIds);
+      
+      const courseIds = coursesData?.map(c => c.id) || [];
+      
+      if (courseIds.length === 0) {
+        setTodayTasks([]);
+        setLoading(false);
+        return;
+      }
+
+      // 获取今日任务 - 只获取学生专业相关的任务
       const { data, error } = await supabase
         .from('training_tasks')
         .select(`
@@ -64,6 +96,7 @@ export default function CheckIn() {
           course:courses(name)
         `)
         .eq('scheduled_date', today)
+        .in('course_id', courseIds)
         .order('start_time', { ascending: true });
 
       if (error) throw error;

@@ -91,9 +91,27 @@ export default function Submissions() {
     if (!user?.id) return;
     
     try {
-      // 获取可提交的任务（今天及之前的）
+      // 获取学生所属专业
+      const { data: studentMajorsData } = await supabase
+        .from('student_majors')
+        .select('major_id')
+        .eq('user_id', user.id);
+      
+      const majorIds = studentMajorsData?.map(sm => sm.major_id) || [];
+      
+      // 获取专业对应的课程
+      let courseIds: string[] = [];
+      if (majorIds.length > 0) {
+        const { data: coursesData } = await supabase
+          .from('courses')
+          .select('id')
+          .in('major_id', majorIds);
+        courseIds = coursesData?.map(c => c.id) || [];
+      }
+
+      // 获取可提交的任务（今天及之前的，且属于学生专业的课程）
       const today = format(new Date(), 'yyyy-MM-dd');
-      const { data: tasksData, error: tasksError } = await supabase
+      let tasksQuery = supabase
         .from('training_tasks')
         .select(`
           id,
@@ -105,6 +123,17 @@ export default function Submissions() {
         .lte('scheduled_date', today)
         .order('scheduled_date', { ascending: false })
         .limit(20);
+      
+      // 如果有课程限制，应用过滤
+      if (courseIds.length > 0) {
+        tasksQuery = tasksQuery.in('course_id', courseIds);
+      } else if (majorIds.length > 0) {
+        // 如果有专业但没有课程，返回空
+        setTasks([]);
+        // 继续获取已有提交
+      }
+
+      const { data: tasksData, error: tasksError } = await tasksQuery;
 
       if (tasksError) throw tasksError;
       setTasks(tasksData || []);

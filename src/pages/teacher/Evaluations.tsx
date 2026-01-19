@@ -111,36 +111,83 @@ export default function TeacherEvaluations() {
   }, []);
 
   const fetchData = async () => {
+    if (!user?.id) return;
+    
     try {
-      // 并行获取课程、任务和提交列表
-      const [coursesRes, tasksRes, submissionsRes] = await Promise.all([
-        supabase.from('courses').select('id, name').order('name'),
-        supabase.from('training_tasks').select('id, name, task_number, course_id').order('scheduled_date', { ascending: false }),
-        supabase.from('submissions')
-          .select(`
-            id,
-            content,
-            file_urls,
-            status,
-            submitted_at,
-            user_id,
-            task:training_tasks(
-              id,
-              name,
-              task_number,
-              course:courses(id, name)
-            )
-          `)
-          .order('submitted_at', { ascending: false })
-      ]);
+      // 首先获取教师负责的课程
+      const { data: teacherCoursesData } = await supabase
+        .from('teacher_courses')
+        .select('course_id')
+        .eq('user_id', user.id);
+      
+      const teacherCourseIds = teacherCoursesData?.map(tc => tc.course_id) || [];
+      
+      // 如果教师没有分配课程，显示空列表
+      if (teacherCourseIds.length === 0) {
+        setCourses([]);
+        setTasks([]);
+        setSubmissions([]);
+        setLoading(false);
+        return;
+      }
 
-      if (coursesRes.data) setCourses(coursesRes.data);
-      if (tasksRes.data) setTasks(tasksRes.data);
+      // 先获取教师负责课程的任务ID
+      const { data: tasksData } = await supabase
+        .from('training_tasks')
+        .select('id, name, task_number, course_id')
+        .in('course_id', teacherCourseIds)
+        .order('scheduled_date', { ascending: false });
+      
+      const taskIds = tasksData?.map(t => t.id) || [];
+      setTasks(tasksData || []);
 
-      if (submissionsRes.error) throw submissionsRes.error;
+      // 获取课程信息
+      const { data: coursesData } = await supabase
+        .from('courses')
+        .select('id, name')
+        .in('id', teacherCourseIds)
+        .order('name');
+      
+      setCourses(coursesData || []);
+
+      // 如果没有任务，不需要查询提交
+      if (taskIds.length === 0) {
+        setSubmissions([]);
+        setLoading(false);
+        return;
+      }
+
+      // 获取这些任务的提交
+      const { data: submissionsData, error: submissionsError } = await supabase
+        .from('submissions')
+        .select(`
+          id,
+          content,
+          file_urls,
+          status,
+          submitted_at,
+          user_id,
+          task_id
+        `)
+        .in('task_id', taskIds)
+        .order('submitted_at', { ascending: false });
+
+      if (submissionsError) throw submissionsError;
+
+      // 构建任务映射
+      const tasksMap: Record<string, TrainingTask & { course?: Course }> = {};
+      tasksData?.forEach(t => {
+        tasksMap[t.id] = t;
+      });
+
+      // 获取课程映射
+      const coursesMap: Record<string, Course> = {};
+      coursesData?.forEach(c => {
+        coursesMap[c.id] = c;
+      });
 
       // 获取用户资料
-      const userIds = [...new Set(submissionsRes.data?.map(s => s.user_id) || [])];
+      const userIds = [...new Set(submissionsData?.map(s => s.user_id) || [])] as string[];
       let profilesMap: Record<string, { full_name: string; student_id: string | null }> = {};
       
       if (userIds.length > 0) {
@@ -154,10 +201,21 @@ export default function TeacherEvaluations() {
         });
       }
 
-      const submissionsWithProfiles = (submissionsRes.data || []).map(s => ({
-        ...s,
-        profile: profilesMap[s.user_id],
-      })) as unknown as Submission[];
+      // 构建带完整信息的提交列表
+      const submissionsWithProfiles = (submissionsData || []).map(s => {
+        const task = tasksMap[s.task_id];
+        const course = task ? coursesMap[task.course_id] : null;
+        return {
+          ...s,
+          profile: profilesMap[s.user_id],
+          task: task ? {
+            id: task.id,
+            name: task.name,
+            task_number: task.task_number,
+            course: course ? { id: course.id, name: course.name } : { id: '', name: '' }
+          } : null
+        };
+      }).filter(s => s.task !== null) as Submission[];
 
       setSubmissions(submissionsWithProfiles);
 
