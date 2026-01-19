@@ -11,9 +11,16 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 
-// Dashboard Pages
+// Student Pages
 import StudentDashboard from "@/pages/student/StudentDashboard";
+import CheckIn from "@/pages/student/CheckIn";
+import Submissions from "@/pages/student/Submissions";
+import StudentEvaluations from "@/pages/student/Evaluations";
+
+// Teacher Pages
 import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
+
+// Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 
 import NotFound from "@/pages/NotFound";
@@ -70,11 +77,31 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/student/*"
+        path="/student/check-in"
         element={
           <ProtectedRoute allowedRoles={['student']}>
             <DashboardLayout>
-              <StudentDashboard />
+              <CheckIn />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/submissions"
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <DashboardLayout>
+              <Submissions />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/evaluations"
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <DashboardLayout>
+              <StudentEvaluations />
             </DashboardLayout>
           </ProtectedRoute>
         }
