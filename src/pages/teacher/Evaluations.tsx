@@ -58,6 +58,7 @@ interface Submission {
     name: string;
     task_number: string;
     course: {
+      id: string;
       name: string;
     };
   };
@@ -69,12 +70,28 @@ interface CommentTemplate {
   category: string;
 }
 
+interface Course {
+  id: string;
+  name: string;
+}
+
+interface TrainingTask {
+  id: string;
+  name: string;
+  task_number: string;
+  course_id: string;
+}
+
 export default function TeacherEvaluations() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [templates, setTemplates] = useState<CommentTemplate[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [tasks, setTasks] = useState<TrainingTask[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('pending');
+  const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const [selectedTask, setSelectedTask] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   
   // 单个评价状态
@@ -95,29 +112,35 @@ export default function TeacherEvaluations() {
 
   const fetchData = async () => {
     try {
-      // 获取提交列表
-      const { data: submissionsData, error } = await supabase
-        .from('submissions')
-        .select(`
-          id,
-          content,
-          file_urls,
-          status,
-          submitted_at,
-          user_id,
-          task:training_tasks(
+      // 并行获取课程、任务和提交列表
+      const [coursesRes, tasksRes, submissionsRes] = await Promise.all([
+        supabase.from('courses').select('id, name').order('name'),
+        supabase.from('training_tasks').select('id, name, task_number, course_id').order('scheduled_date', { ascending: false }),
+        supabase.from('submissions')
+          .select(`
             id,
-            name,
-            task_number,
-            course:courses(name)
-          )
-        `)
-        .order('submitted_at', { ascending: false });
+            content,
+            file_urls,
+            status,
+            submitted_at,
+            user_id,
+            task:training_tasks(
+              id,
+              name,
+              task_number,
+              course:courses(id, name)
+            )
+          `)
+          .order('submitted_at', { ascending: false })
+      ]);
 
-      if (error) throw error;
+      if (coursesRes.data) setCourses(coursesRes.data);
+      if (tasksRes.data) setTasks(tasksRes.data);
+
+      if (submissionsRes.error) throw submissionsRes.error;
 
       // 获取用户资料
-      const userIds = [...new Set(submissionsData?.map(s => s.user_id) || [])];
+      const userIds = [...new Set(submissionsRes.data?.map(s => s.user_id) || [])];
       let profilesMap: Record<string, { full_name: string; student_id: string | null }> = {};
       
       if (userIds.length > 0) {
@@ -131,7 +154,7 @@ export default function TeacherEvaluations() {
         });
       }
 
-      const submissionsWithProfiles = (submissionsData || []).map(s => ({
+      const submissionsWithProfiles = (submissionsRes.data || []).map(s => ({
         ...s,
         profile: profilesMap[s.user_id],
       })) as unknown as Submission[];
@@ -258,12 +281,19 @@ export default function TeacherEvaluations() {
     }
   };
 
+  // 根据选择的课程筛选可用任务
+  const filteredTasks = selectedCourse === 'all' 
+    ? tasks 
+    : tasks.filter(t => t.course_id === selectedCourse);
+
   const filteredSubmissions = submissions.filter(s => {
     const matchesStatus = selectedStatus === 'all' || s.status === selectedStatus;
+    const matchesCourse = selectedCourse === 'all' || s.task?.course?.id === selectedCourse;
+    const matchesTask = selectedTask === 'all' || s.task?.id === selectedTask;
     const matchesSearch = !searchTerm ||
       s.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.task?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesCourse && matchesTask && matchesSearch;
   });
 
   const pendingCount = submissions.filter(s => s.status === 'pending').length;
@@ -356,21 +386,48 @@ export default function TeacherEvaluations() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜索学生姓名或任务名称..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="搜索学生姓名..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
 
+            <Select value={selectedCourse} onValueChange={(value) => {
+              setSelectedCourse(value);
+              setSelectedTask('all'); // 切换课程时重置任务选择
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="选择课程" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部课程</SelectItem>
+                {courses.map(course => (
+                  <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedTask} onValueChange={setSelectedTask}>
+              <SelectTrigger>
+                <SelectValue placeholder="选择任务" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部任务</SelectItem>
+                {filteredTasks.map(task => (
+                  <SelectItem key={task.id} value={task.id}>
+                    {task.task_number} - {task.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full md:w-[150px]">
+              <SelectTrigger>
                 <SelectValue placeholder="选择状态" />
               </SelectTrigger>
               <SelectContent>
