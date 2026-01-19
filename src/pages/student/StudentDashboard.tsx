@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { 
   ClipboardCheck, 
@@ -11,26 +13,150 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  Loader2,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
+
+interface TodayTask {
+  id: string;
+  name: string;
+  task_number: string;
+  start_time: string | null;
+  end_time: string | null;
+  course: {
+    name: string;
+  };
+  isCheckedIn: boolean;
+}
+
+interface Stats {
+  totalTasks: number;
+  completedCheckIns: number;
+  pendingEvaluations: number;
+  averageScore: number;
+}
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [todayTasks, setTodayTasks] = useState<TodayTask[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalTasks: 0,
+    completedCheckIns: 0,
+    pendingEvaluations: 0,
+    averageScore: 0,
+  });
 
-  // 模拟数据 - 后续会从数据库获取
-  const todayTask = {
-    name: '电工基础实训 - 接线练习',
-    taskNumber: 'EL-2024-001',
-    time: '08:30 - 11:30',
-    location: '实训楼A301',
-    isCheckedIn: false,
+  useEffect(() => {
+    if (user?.id) {
+      fetchDashboardData();
+    }
+  }, [user?.id]);
+
+  const fetchDashboardData = async () => {
+    if (!user?.id) return;
+
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+
+      // 获取今日任务
+      const { data: tasksData } = await supabase
+        .from('training_tasks')
+        .select(`
+          id,
+          name,
+          task_number,
+          start_time,
+          end_time,
+          course:courses(name)
+        `)
+        .eq('scheduled_date', today);
+
+      // 获取今日打卡记录
+      const { data: checkInsData } = await supabase
+        .from('check_ins')
+        .select('task_id')
+        .eq('user_id', user.id)
+        .gte('check_in_time', `${today}T00:00:00`)
+        .lte('check_in_time', `${today}T23:59:59`);
+
+      const checkedInTaskIds = new Set(checkInsData?.map(c => c.task_id) || []);
+      
+      const todayTasksWithStatus = (tasksData || []).map(task => ({
+        ...task,
+        course: task.course as { name: string },
+        isCheckedIn: checkedInTaskIds.has(task.id),
+      }));
+      setTodayTasks(todayTasksWithStatus);
+
+      // 获取统计数据
+      const { count: totalTasksCount } = await supabase
+        .from('training_tasks')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: completedCheckInsCount } = await supabase
+        .from('check_ins')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      // 获取待评价的提交数
+      const { count: pendingCount } = await supabase
+        .from('submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+
+      // 获取平均分
+      const { data: submissionsData } = await supabase
+        .from('submissions')
+        .select('id')
+        .eq('user_id', user.id);
+
+      let avgScore = 0;
+      if (submissionsData && submissionsData.length > 0) {
+        const submissionIds = submissionsData.map(s => s.id);
+        const { data: evaluationsData } = await supabase
+          .from('evaluations')
+          .select('score')
+          .in('submission_id', submissionIds);
+        
+        if (evaluationsData && evaluationsData.length > 0) {
+          avgScore = Math.round(
+            evaluationsData.reduce((acc, e) => acc + e.score, 0) / evaluationsData.length
+          );
+        }
+      }
+
+      setStats({
+        totalTasks: totalTasksCount || 0,
+        completedCheckIns: completedCheckInsCount || 0,
+        pendingEvaluations: pendingCount || 0,
+        averageScore: avgScore,
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const stats = {
-    totalTasks: 12,
-    completedTasks: 8,
-    pendingEvaluations: 2,
-    averageScore: 85,
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return '早上好';
+    if (hour < 18) return '下午好';
+    return '晚上好';
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const mainTask = todayTasks[0];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -38,7 +164,7 @@ export default function StudentDashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">
-            早上好 👋
+            {getGreeting()} 👋
           </h1>
           <p className="text-muted-foreground mt-1">
             欢迎回来，{user?.email?.split('@')[0]}！今天也要加油哦~
@@ -46,12 +172,7 @@ export default function StudentDashboard() {
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
-          <span>{new Date().toLocaleDateString('zh-CN', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            weekday: 'long'
-          })}</span>
+          <span>{format(new Date(), 'yyyy年MM月dd日 EEEE', { locale: zhCN })}</span>
         </div>
       </div>
 
@@ -61,30 +182,40 @@ export default function StudentDashboard() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm opacity-90">今日实训任务</p>
-              <h2 className="text-xl font-bold mt-1">{todayTask.name}</h2>
-              <div className="flex items-center gap-4 mt-3 text-sm opacity-90">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {todayTask.time}
+              {mainTask ? (
+                <>
+                  <h2 className="text-xl font-bold mt-1">{mainTask.name}</h2>
+                  <div className="flex items-center gap-4 mt-3 text-sm opacity-90">
+                    {mainTask.start_time && mainTask.end_time && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {mainTask.start_time.slice(0, 5)} - {mainTask.end_time.slice(0, 5)}
+                      </span>
+                    )}
+                    <span>任务编号：{mainTask.task_number}</span>
+                  </div>
+                </>
+              ) : (
+                <h2 className="text-xl font-bold mt-1">今天没有安排实训任务</h2>
+              )}
+            </div>
+            {mainTask && (
+              <div className="text-right">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 text-sm">
+                  {mainTask.isCheckedIn ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      已打卡
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-4 w-4" />
+                      待打卡
+                    </>
+                  )}
                 </span>
-                <span>任务编号：{todayTask.taskNumber}</span>
               </div>
-            </div>
-            <div className="text-right">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 text-sm">
-                {todayTask.isCheckedIn ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4" />
-                    已打卡
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="h-4 w-4" />
-                    待打卡
-                  </>
-                )}
-              </span>
-            </div>
+            )}
           </div>
         </div>
         <CardContent className="p-6">
@@ -92,7 +223,7 @@ export default function StudentDashboard() {
             <Button asChild className="flex-1 h-12 gradient-primary text-white">
               <Link to="/student/check-in">
                 <ClipboardCheck className="mr-2 h-5 w-5" />
-                立即打卡
+                {todayTasks.length > 0 ? '立即打卡' : '查看打卡记录'}
               </Link>
             </Button>
             <Button asChild variant="outline" className="flex-1 h-12">
@@ -125,8 +256,8 @@ export default function StudentDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">已完成</p>
-                <p className="text-2xl font-bold mt-1">{stats.completedTasks}</p>
+                <p className="text-sm text-muted-foreground">已打卡</p>
+                <p className="text-2xl font-bold mt-1">{stats.completedCheckIns}</p>
               </div>
               <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
                 <CheckCircle2 className="h-6 w-6 text-success" />
@@ -154,7 +285,7 @@ export default function StudentDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">平均分</p>
-                <p className="text-2xl font-bold mt-1">{stats.averageScore}</p>
+                <p className="text-2xl font-bold mt-1">{stats.averageScore || '--'}</p>
               </div>
               <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
                 <Star className="h-6 w-6 text-info" />
