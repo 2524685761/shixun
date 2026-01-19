@@ -10,6 +10,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 // Auth Pages
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 
 // Student Pages
 import StudentDashboard from "@/pages/student/StudentDashboard";
@@ -70,6 +72,8 @@ function AppRoutes() {
       {/* 认证页面 */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* 学生端路由 */}
       <Route

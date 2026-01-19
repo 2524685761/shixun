@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -37,7 +38,9 @@ import {
   Plus,
   Edit,
   Eye,
-  Mail,
+  Check,
+  X,
+  Copy,
 } from 'lucide-react';
 
 interface UserWithProfile {
@@ -65,6 +68,46 @@ const roleColors = {
   admin: 'bg-warning/10 text-warning',
 };
 
+// 密码强度检查
+const checkPasswordStrength = (password: string) => {
+  const checks = {
+    length: password.length >= 8,
+    lowercase: /[a-z]/.test(password),
+    uppercase: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+  };
+  
+  const passedChecks = Object.values(checks).filter(Boolean).length;
+  let strength: 'weak' | 'medium' | 'strong' = 'weak';
+  
+  if (passedChecks >= 4) {
+    strength = 'strong';
+  } else if (passedChecks >= 3) {
+    strength = 'medium';
+  }
+  
+  return { checks, passedChecks, strength, percentage: (passedChecks / 4) * 100 };
+};
+
+// 生成随机密码
+const generatePassword = () => {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const all = lowercase + uppercase + numbers;
+  
+  let password = '';
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  
+  for (let i = 0; i < 9; i++) {
+    password += all[Math.floor(Math.random() * all.length)];
+  }
+  
+  return password.split('').sort(() => Math.random() - 0.5).join('');
+};
+
 export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<UserWithProfile[]>([]);
@@ -79,6 +122,22 @@ export default function UserManagement() {
     employee_id: '',
   });
   const [saving, setSaving] = useState(false);
+
+  // 创建用户相关状态
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    role: 'teacher' as 'student' | 'teacher' | 'admin',
+    student_id: '',
+    employee_id: '',
+    phone: '',
+  });
+  const [creating, setCreating] = useState(false);
+  const [createdUser, setCreatedUser] = useState<{ email: string; password: string } | null>(null);
+
+  const passwordStrength = useMemo(() => checkPasswordStrength(createForm.password), [createForm.password]);
 
   useEffect(() => {
     fetchUsers();
@@ -169,6 +228,103 @@ export default function UserManagement() {
     }
   };
 
+  const handleOpenCreateDialog = () => {
+    const newPassword = generatePassword();
+    setCreateForm({
+      email: '',
+      password: newPassword,
+      full_name: '',
+      role: 'teacher',
+      student_id: '',
+      employee_id: '',
+      phone: '',
+    });
+    setCreatedUser(null);
+    setShowCreateDialog(true);
+  };
+
+  const handleGeneratePassword = () => {
+    setCreateForm(prev => ({ ...prev, password: generatePassword() }));
+  };
+
+  const handleCreateUser = async () => {
+    if (!createForm.email || !createForm.password || !createForm.full_name) {
+      toast.error('请填写所有必填项');
+      return;
+    }
+
+    if (passwordStrength.strength === 'weak') {
+      toast.error('密码强度太弱');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      // 使用 Supabase Auth 创建用户
+      const { data, error } = await supabase.auth.signUp({
+        email: createForm.email,
+        password: createForm.password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            full_name: createForm.full_name,
+            role: createForm.role,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // 创建用户角色
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: createForm.role,
+          });
+
+        if (roleError) {
+          console.error('Error creating user role:', roleError);
+        }
+
+        // 创建用户资料
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
+            full_name: createForm.full_name,
+            student_id: createForm.role === 'student' ? createForm.student_id || null : null,
+            employee_id: createForm.role !== 'student' ? createForm.employee_id || null : null,
+            phone: createForm.phone || null,
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+        }
+
+        // 显示创建成功信息
+        setCreatedUser({
+          email: createForm.email,
+          password: createForm.password,
+        });
+        
+        toast.success('用户创建成功！');
+        fetchUsers();
+      }
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      toast.error(error.message || '创建失败');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('已复制到剪贴板');
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     const matchesSearch = !searchTerm ||
@@ -206,14 +362,20 @@ export default function UserManagement() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 页面标题 */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Users className="h-6 w-6 text-primary" />
-          用户管理
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          管理系统用户账号和权限
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Users className="h-6 w-6 text-primary" />
+            用户管理
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            管理系统用户账号和权限
+          </p>
+        </div>
+        <Button onClick={handleOpenCreateDialog} className="gradient-primary text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          添加用户
+        </Button>
       </div>
 
       {/* 统计卡片 */}
@@ -467,6 +629,190 @@ export default function UserManagement() {
               保存
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 创建用户弹窗 */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {createdUser ? '用户创建成功' : '添加新用户'}
+            </DialogTitle>
+            <DialogDescription>
+              {createdUser ? '请将以下信息发送给用户' : '创建教师或管理员账号'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {createdUser ? (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">邮箱</span>
+                    <div className="flex items-center gap-2">
+                      <code className="text-sm font-mono bg-muted px-2 py-1 rounded">{createdUser.email}</code>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(createdUser.email)}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">密码</span>
+                    <div className="flex items-center gap-2">
+                      <code className="text-sm font-mono bg-muted px-2 py-1 rounded">{createdUser.password}</code>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(createdUser.password)}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-xs text-muted-foreground">
+                ⚠️ 请妥善保管此信息，密码不会再次显示。建议用户首次登录后修改密码。
+              </p>
+              
+              <Button 
+                onClick={() => setShowCreateDialog(false)} 
+                className="w-full gradient-primary text-white"
+              >
+                完成
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>角色 *</Label>
+                <Select 
+                  value={createForm.role} 
+                  onValueChange={(value) => setCreateForm({ ...createForm, role: value as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4" />
+                        学生
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="teacher">
+                      <div className="flex items-center gap-2">
+                        <UserCog className="h-4 w-4" />
+                        教师
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="admin">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        管理员
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>姓名 *</Label>
+                <Input
+                  value={createForm.full_name}
+                  onChange={(e) => setCreateForm({ ...createForm, full_name: e.target.value })}
+                  placeholder="请输入姓名"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>邮箱 *</Label>
+                <Input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  placeholder="请输入邮箱"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>密码 *</Label>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleGeneratePassword}
+                    className="text-xs h-6"
+                  >
+                    重新生成
+                  </Button>
+                </div>
+                <Input
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  placeholder="密码"
+                />
+                {createForm.password && (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">密码强度</span>
+                      <span className={
+                        passwordStrength.strength === 'strong' ? 'text-success' :
+                        passwordStrength.strength === 'medium' ? 'text-warning' : 'text-destructive'
+                      }>
+                        {passwordStrength.strength === 'strong' ? '强' : passwordStrength.strength === 'medium' ? '中' : '弱'}
+                      </span>
+                    </div>
+                    <Progress value={passwordStrength.percentage} className="h-1" />
+                  </div>
+                )}
+              </div>
+
+              {createForm.role === 'student' && (
+                <div className="space-y-2">
+                  <Label>学号</Label>
+                  <Input
+                    value={createForm.student_id}
+                    onChange={(e) => setCreateForm({ ...createForm, student_id: e.target.value })}
+                    placeholder="请输入学号（可选）"
+                  />
+                </div>
+              )}
+
+              {createForm.role !== 'student' && (
+                <div className="space-y-2">
+                  <Label>工号</Label>
+                  <Input
+                    value={createForm.employee_id}
+                    onChange={(e) => setCreateForm({ ...createForm, employee_id: e.target.value })}
+                    placeholder="请输入工号（可选）"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>电话</Label>
+                <Input
+                  value={createForm.phone}
+                  onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                  placeholder="请输入电话（可选）"
+                />
+              </div>
+              
+              <DialogFooter className="pt-4">
+                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                  取消
+                </Button>
+                <Button 
+                  onClick={handleCreateUser}
+                  disabled={creating}
+                  className="gradient-primary text-white"
+                >
+                  {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  创建用户
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

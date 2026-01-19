@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,39 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, role } = useAuth();
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const { signIn, role, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // 监听role变化后再跳转，确保角色已加载
+  useEffect(() => {
+    if (loginSuccess && !authLoading && user && role) {
+      toast.success('登录成功！');
+      
+      if (role === 'student') {
+        navigate('/student', { replace: true });
+      } else if (role === 'teacher') {
+        navigate('/teacher', { replace: true });
+      } else if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [loginSuccess, role, user, authLoading, navigate]);
+
+  // 如果用户已登录，自动跳转
+  useEffect(() => {
+    if (!authLoading && user && role && !loginSuccess) {
+      if (role === 'student') {
+        navigate('/student', { replace: true });
+      } else if (role === 'teacher') {
+        navigate('/teacher', { replace: true });
+      } else if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      }
+    }
+  }, [user, role, authLoading, navigate, loginSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,20 +65,8 @@ export default function Login() {
       return;
     }
 
-    toast.success('登录成功！');
-    
-    // 根据角色跳转
-    setTimeout(() => {
-      if (role === 'student') {
-        navigate('/student');
-      } else if (role === 'teacher') {
-        navigate('/teacher');
-      } else if (role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
-    }, 100);
+    // 标记登录成功，等待 useEffect 监听 role 变化后跳转
+    setLoginSuccess(true);
   };
 
   return (
@@ -87,7 +106,15 @@ export default function Login() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">密码</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">密码</Label>
+                <Link 
+                  to="/forgot-password" 
+                  className="text-xs text-primary hover:underline"
+                >
+                  忘记密码？
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
@@ -111,12 +138,12 @@ export default function Login() {
             <Button 
               type="submit" 
               className="w-full h-11 gradient-primary text-white font-medium"
-              disabled={loading}
+              disabled={loading || loginSuccess}
             >
-              {loading ? (
+              {loading || loginSuccess ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  登录中...
+                  {loginSuccess ? '正在跳转...' : '登录中...'}
                 </>
               ) : (
                 '登录'

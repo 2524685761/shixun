@@ -1,13 +1,13 @@
-import { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Loader2, GraduationCap, Eye, EyeOff, Check, X } from 'lucide-react';
+import { Loader2, GraduationCap, Eye, EyeOff, Check, X, CheckCircle } from 'lucide-react';
 
 // 密码强度检查
 const checkPasswordStrength = (password: string) => {
@@ -21,37 +21,43 @@ const checkPasswordStrength = (password: string) => {
   
   const passedChecks = Object.values(checks).filter(Boolean).length;
   let strength: 'weak' | 'medium' | 'strong' = 'weak';
-  let color = 'bg-destructive';
   
   if (passedChecks >= 4) {
     strength = 'strong';
-    color = 'bg-success';
   } else if (passedChecks >= 3) {
     strength = 'medium';
-    color = 'bg-warning';
   }
   
-  return { checks, passedChecks, strength, color, percentage: (passedChecks / 5) * 100 };
+  return { checks, passedChecks, strength, percentage: (passedChecks / 5) * 100 };
 };
 
-export default function Register() {
-  const [email, setEmail] = useState('');
+export default function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [studentId, setStudentId] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const passwordStrength = useMemo(() => checkPasswordStrength(password), [password]);
 
+  // 检查是否有有效的重置会话
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (!accessToken || type !== 'recovery') {
+      toast.error('无效的重置链接');
+      navigate('/login');
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !fullName) {
-      toast.error('请填写所有必填项');
+    if (!password) {
+      toast.error('请输入新密码');
       return;
     }
 
@@ -72,17 +78,21 @@ export default function Register() {
 
     setLoading(true);
     
-    // 学生注册，角色固定为 student
-    const { error } = await signUp(email, password, fullName, 'student', studentId);
+    const { error } = await supabase.auth.updateUser({ password });
     
     if (error) {
-      toast.error('注册失败：' + error.message);
+      toast.error('重置失败：' + error.message);
       setLoading(false);
       return;
     }
 
-    toast.success('注册成功！请登录');
-    navigate('/login');
+    setSuccess(true);
+    toast.success('密码重置成功！');
+    
+    // 3秒后跳转到登录页
+    setTimeout(() => {
+      navigate('/login');
+    }, 3000);
   };
 
   const strengthLabels = {
@@ -91,9 +101,33 @@ export default function Register() {
     strong: '强',
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-accent/20 blur-3xl" />
+        </div>
+
+        <Card className="w-full max-w-md shadow-soft relative animate-fade-in">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 text-success" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold">密码重置成功</CardTitle>
+              <CardDescription className="mt-2">
+                即将跳转到登录页面...
+              </CardDescription>
+            </div>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-accent/20 blur-3xl" />
@@ -105,9 +139,9 @@ export default function Register() {
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">学生注册</CardTitle>
+            <CardTitle className="text-2xl font-bold">设置新密码</CardTitle>
             <CardDescription className="mt-2">
-              注册账号开始实训学习
+              请输入您的新密码
             </CardDescription>
           </div>
         </CardHeader>
@@ -115,51 +149,12 @@ export default function Register() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">姓名 *</Label>
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="请输入真实姓名"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="studentId">学号</Label>
-              <Input
-                id="studentId"
-                type="text"
-                placeholder="请输入学号（可选）"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">邮箱 *</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="请输入邮箱"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">密码 *</Label>
+              <Label htmlFor="password">新密码</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="请输入密码（至少8位）"
+                  placeholder="请输入新密码（至少8位）"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
@@ -213,11 +208,11 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">确认密码 *</Label>
+              <Label htmlFor="confirmPassword">确认新密码</Label>
               <Input
                 id="confirmPassword"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="请再次输入密码"
+                placeholder="请再次输入新密码"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={loading}
@@ -239,27 +234,13 @@ export default function Register() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  注册中...
+                  重置中...
                 </>
               ) : (
-                '注册'
+                '重置密码'
               )}
             </Button>
           </form>
-
-          <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
-            <p>💡 提示：教师和管理员账号需由管理员创建，学生可自行注册</p>
-          </div>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            已有账号？{' '}
-            <Link 
-              to="/login" 
-              className="text-primary hover:underline font-medium"
-            >
-              立即登录
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>

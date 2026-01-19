@@ -10,7 +10,7 @@ interface AuthContextType {
   role: AppRole | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, role: AppRole) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, role: AppRole, studentId?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -99,7 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string, selectedRole: AppRole) => {
+  // 学生自注册，角色固定为 student
+  const signUp = async (email: string, password: string, fullName: string, selectedRole: AppRole = 'student', studentId?: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -119,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // 注册成功后创建用户角色和资料
       if (data.user) {
-        // 创建用户角色
+        // 创建用户角色 - 学生自注册只能是 student
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
@@ -137,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .insert({
             user_id: data.user.id,
             full_name: fullName,
+            student_id: studentId || null,
           });
 
         if (profileError) {
