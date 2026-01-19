@@ -60,30 +60,15 @@ export default function StudentDashboard() {
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
 
-      // 获取学生所属专业
-      const { data: studentMajorsData } = await supabase
-        .from('student_majors')
-        .select('major_id')
+      // 获取学生分配的课程
+      const { data: studentCoursesData } = await supabase
+        .from('student_courses')
+        .select('course_id')
         .eq('user_id', user.id);
       
-      const majorIds = studentMajorsData?.map(sm => sm.major_id) || [];
+      const courseIds = studentCoursesData?.map(sc => sc.course_id) || [];
       
-      // 如果学生没有分配专业，显示空数据
-      if (majorIds.length === 0) {
-        setTodayTasks([]);
-        setStats({ totalTasks: 0, completedCheckIns: 0, pendingEvaluations: 0, averageScore: 0 });
-        setLoading(false);
-        return;
-      }
-
-      // 获取专业对应的课程
-      const { data: coursesData } = await supabase
-        .from('courses')
-        .select('id')
-        .in('major_id', majorIds);
-      
-      const courseIds = coursesData?.map(c => c.id) || [];
-      
+      // 如果学生没有分配课程，显示空数据
       if (courseIds.length === 0) {
         setTodayTasks([]);
         setStats({ totalTasks: 0, completedCheckIns: 0, pendingEvaluations: 0, averageScore: 0 });

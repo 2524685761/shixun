@@ -60,27 +60,13 @@ export default function CheckIn() {
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
       
-      // 获取学生所属专业
-      const { data: studentMajorsData } = await supabase
-        .from('student_majors')
-        .select('major_id')
+      // 获取学生分配的课程
+      const { data: studentCoursesData } = await supabase
+        .from('student_courses')
+        .select('course_id')
         .eq('user_id', user.id);
       
-      const majorIds = studentMajorsData?.map(sm => sm.major_id) || [];
-      
-      if (majorIds.length === 0) {
-        setTodayTasks([]);
-        setLoading(false);
-        return;
-      }
-
-      // 获取专业对应的课程
-      const { data: coursesData } = await supabase
-        .from('courses')
-        .select('id')
-        .in('major_id', majorIds);
-      
-      const courseIds = coursesData?.map(c => c.id) || [];
+      const courseIds = studentCoursesData?.map(sc => sc.course_id) || [];
       
       if (courseIds.length === 0) {
         setTodayTasks([]);

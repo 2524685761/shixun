@@ -99,7 +99,7 @@ interface Student {
   id: string;
   full_name: string;
   student_id: string | null;
-  assignedMajorIds: string[];
+  assignedCourseIds: string[];
 }
 
 export default function CourseManagement() {
@@ -259,19 +259,19 @@ export default function CourseManagement() {
           .select('user_id, full_name, student_id')
           .in('user_id', studentIds);
         
-        // 获取学生-专业关联
-        const { data: studentMajors } = await supabase
-          .from('student_majors')
-          .select('user_id, major_id')
+        // 获取学生-课程关联
+        const { data: studentCourses } = await supabase
+          .from('student_courses')
+          .select('user_id, course_id')
           .in('user_id', studentIds);
         
         const studentData: Student[] = (studentProfiles || []).map(p => ({
           id: p.user_id,
           full_name: p.full_name,
           student_id: p.student_id,
-          assignedMajorIds: (studentMajors || [])
-            .filter(sm => sm.user_id === p.user_id)
-            .map(sm => sm.major_id),
+          assignedCourseIds: (studentCourses || [])
+            .filter(sc => sc.user_id === p.user_id)
+            .map(sc => sc.course_id),
         }));
         
         setStudents(studentData);
@@ -519,7 +519,7 @@ export default function CourseManagement() {
   // Student assignment handlers
   const openStudentAssignDialog = (student: Student) => {
     setSelectedStudent(student);
-    setSelectedMajorIds(student.assignedMajorIds);
+    setSelectedCourseIds(student.assignedCourseIds);
     setStudentAssignDialogOpen(true);
   };
 
@@ -530,24 +530,24 @@ export default function CourseManagement() {
     try {
       // 删除旧的分配
       await supabase
-        .from('student_majors')
+        .from('student_courses')
         .delete()
         .eq('user_id', selectedStudent.id);
       
       // 插入新的分配
-      if (selectedMajorIds.length > 0) {
+      if (selectedCourseIds.length > 0) {
         const { error } = await supabase
-          .from('student_majors')
+          .from('student_courses')
           .insert(
-            selectedMajorIds.map(majorId => ({
+            selectedCourseIds.map(courseId => ({
               user_id: selectedStudent.id,
-              major_id: majorId,
+              course_id: courseId,
             }))
           );
         if (error) throw error;
       }
       
-      toast.success('专业分配已更新');
+      toast.success('课程分配已更新');
       setStudentAssignDialogOpen(false);
       fetchData();
     } catch (error: any) {
@@ -968,10 +968,10 @@ export default function CourseManagement() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
-                学生专业分配
+                学生课程分配
               </CardTitle>
               <CardDescription>
-                为学生分配专业，学生只能看到所属专业下的课程和实训任务
+                为学生分配课程，学生只能看到所分配课程下的实训任务
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1002,15 +1002,15 @@ export default function CourseManagement() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          {student.assignedMajorIds.length === 0 ? (
-                            <span className="text-sm text-muted-foreground">未分配专业</span>
+                          {student.assignedCourseIds.length === 0 ? (
+                            <span className="text-sm text-muted-foreground">未分配课程</span>
                           ) : (
                             <>
-                              {student.assignedMajorIds.map(majorId => {
-                                const major = majors.find(m => m.id === majorId);
-                                return major ? (
-                                  <Badge key={majorId} className="bg-primary/10 text-primary">
-                                    {major.name}
+                              {student.assignedCourseIds.map(courseId => {
+                                const course = allCourses.find(c => c.id === courseId);
+                                return course ? (
+                                  <Badge key={courseId} className="bg-primary/10 text-primary">
+                                    {course.name}
                                   </Badge>
                                 ) : null;
                               })}
@@ -1024,7 +1024,7 @@ export default function CourseManagement() {
                         onClick={() => openStudentAssignDialog(student)}
                       >
                         <Link className="h-4 w-4 mr-2" />
-                        分配专业
+                        分配课程
                       </Button>
                     </div>
                   ))}
@@ -1227,31 +1227,33 @@ export default function CourseManagement() {
       <Dialog open={studentAssignDialogOpen} onOpenChange={setStudentAssignDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>分配专业给 {selectedStudent?.full_name}</DialogTitle>
+            <DialogTitle>分配课程给 {selectedStudent?.full_name}</DialogTitle>
             <DialogDescription>
-              选择该学生所属的专业
+              选择该学生可以学习的课程
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 max-h-[400px] overflow-y-auto">
-            {majors.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">暂无专业，请先创建专业</p>
+            {allCourses.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">暂无课程，请先创建课程</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {majors.map(major => (
-                  <div 
-                    key={major.id}
-                    className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-secondary/50 cursor-pointer"
-                    onClick={() => toggleMajorSelection(major.id)}
-                  >
-                    <Checkbox 
-                      checked={selectedMajorIds.includes(major.id)}
-                      onCheckedChange={() => toggleMajorSelection(major.id)}
-                    />
-                    <div>
-                      <p className="font-medium">{major.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {major.courses.length} 门课程
-                      </p>
+                  <div key={major.id}>
+                    <p className="font-medium text-sm text-muted-foreground mb-2">{major.name}</p>
+                    <div className="space-y-2 pl-4">
+                      {major.courses.map(course => (
+                        <div 
+                          key={course.id}
+                          className="flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer"
+                          onClick={() => toggleCourseSelection(course.id)}
+                        >
+                          <Checkbox 
+                            checked={selectedCourseIds.includes(course.id)}
+                            onCheckedChange={() => toggleCourseSelection(course.id)}
+                          />
+                          <span>{course.name}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
