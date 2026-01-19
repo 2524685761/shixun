@@ -17,6 +17,7 @@ import {
   Save,
   Shield,
 } from 'lucide-react';
+import { profileFormSchema, validateForm } from '@/lib/validations';
 
 interface Profile {
   id: string;
@@ -40,6 +41,7 @@ export default function ProfilePage() {
     student_id: '',
     employee_id: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -79,14 +81,25 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user?.id) return;
-    if (!formData.full_name.trim()) {
-      toast.error('请输入姓名');
+    setErrors({});
+
+    const validation = validateForm(profileFormSchema, {
+      fullName: formData.full_name,
+      phone: formData.phone || undefined,
+      studentId: formData.student_id || undefined,
+      employeeId: formData.employee_id || undefined,
+    });
+
+    if (validation.success === false) {
+      setErrors(validation.errors);
+      const firstError = Object.values(validation.errors)[0];
+      if (firstError) toast.error(firstError);
       return;
     }
 
     setSaving(true);
     try {
-      const updateData: any = {
+      const updateData: Record<string, string | null> = {
         full_name: formData.full_name.trim(),
         phone: formData.phone.trim() || null,
       };

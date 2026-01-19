@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, GraduationCap, Eye, EyeOff } from 'lucide-react';
+import { loginFormSchema, validateForm } from '@/lib/validations';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { signIn, role, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -49,24 +51,38 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
-    if (!email || !password) {
-      toast.error('请填写邮箱和密码');
+    const validation = validateForm(loginFormSchema, { email, password });
+    if (validation.success === false) {
+      setErrors(validation.errors);
+      const firstError = Object.values(validation.errors)[0];
+      if (firstError) toast.error(firstError);
       return;
     }
 
     setLoading(true);
     
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      toast.error('登录失败：' + error.message);
-      setLoading(false);
-      return;
-    }
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        const errorMessage = error.message.includes('Invalid login')
+          ? '邮箱或密码错误'
+          : error.message.includes('Email not confirmed')
+          ? '邮箱未验证，请先验证邮箱'
+          : '登录失败：' + error.message;
+        toast.error(errorMessage);
+        setLoading(false);
+        return;
+      }
 
-    // 标记登录成功，等待 useEffect 监听 role 变化后跳转
-    setLoginSuccess(true);
+      // 标记登录成功，等待 useEffect 监听 role 变化后跳转
+      setLoginSuccess(true);
+    } catch (err: any) {
+      toast.error('网络错误，请检查网络连接');
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,9 +115,12 @@ export default function Login() {
                 type="email"
                 placeholder="请输入邮箱"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                }}
                 disabled={loading}
-                className="h-11"
+                className={`h-11 ${errors.email ? 'border-destructive' : ''}`}
               />
             </div>
             
