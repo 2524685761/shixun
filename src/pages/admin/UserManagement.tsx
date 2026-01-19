@@ -265,58 +265,37 @@ export default function UserManagement() {
 
     setCreating(true);
     try {
-      // 使用 Supabase Auth 创建用户
-      const { data, error } = await supabase.auth.signUp({
-        email: createForm.email,
-        password: createForm.password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            full_name: createForm.full_name,
-            role: createForm.role,
-          },
+      // 使用边缘函数创建用户（不会影响当前登录会话）
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: createForm.email,
+          password: createForm.password,
+          full_name: createForm.full_name,
+          role: createForm.role,
+          student_id: createForm.role === 'student' ? createForm.student_id : null,
+          employee_id: createForm.role !== 'student' ? createForm.employee_id : null,
+          phone: createForm.phone || null,
         },
       });
 
-      if (error) throw error;
-
-      if (data.user) {
-        // 创建用户角色
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: createForm.role,
-          });
-
-        if (roleError) {
-          console.error('Error creating user role:', roleError);
-        }
-
-        // 创建用户资料
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: data.user.id,
-            full_name: createForm.full_name,
-            student_id: createForm.role === 'student' ? createForm.student_id || null : null,
-            employee_id: createForm.role !== 'student' ? createForm.employee_id || null : null,
-            phone: createForm.phone || null,
-          });
-
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-        }
-
-        // 显示创建成功信息
-        setCreatedUser({
-          email: createForm.email,
-          password: createForm.password,
-        });
-        
-        toast.success('用户创建成功！');
-        fetchUsers();
+      if (response.error) {
+        throw new Error(response.error.message || '创建失败');
       }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || '创建失败');
+      }
+
+      // 显示创建成功信息
+      setCreatedUser({
+        email: createForm.email,
+        password: createForm.password,
+      });
+      
+      toast.success('用户创建成功！');
+      fetchUsers();
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast.error(error.message || '创建失败');
