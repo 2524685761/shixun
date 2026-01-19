@@ -36,7 +36,7 @@ import {
 interface ImportUser {
   email: string;
   full_name: string;
-  role: 'student' | 'teacher';
+  role: 'student' | 'teacher' | 'admin';
   student_id?: string;
   employee_id?: string;
   phone?: string;
@@ -95,17 +95,26 @@ export function BatchImportUsers({ open, onOpenChange, onSuccess }: BatchImportU
       }
 
       // 解析数据
-      const parsedUsers: ImportUser[] = jsonData.map((row) => ({
-        email: String(row['邮箱'] || row['email'] || '').trim(),
-        full_name: String(row['姓名'] || row['full_name'] || '').trim(),
-        role: (String(row['角色'] || row['role'] || '').toLowerCase() === 'teacher' || 
-               String(row['角色'] || row['role'] || '').includes('教师')) ? 'teacher' : 'student',
-        student_id: String(row['学号'] || row['student_id'] || '').trim() || undefined,
-        employee_id: String(row['工号'] || row['employee_id'] || '').trim() || undefined,
-        phone: String(row['电话'] || row['phone'] || '').trim() || undefined,
-        password: generatePassword(),
-        status: 'pending',
-      }));
+      const parsedUsers: ImportUser[] = jsonData.map((row) => {
+        const roleStr = String(row['角色'] || row['role'] || '').toLowerCase();
+        let role: 'student' | 'teacher' | 'admin' = 'student';
+        if (roleStr === 'admin' || roleStr.includes('管理员')) {
+          role = 'admin';
+        } else if (roleStr === 'teacher' || roleStr.includes('教师')) {
+          role = 'teacher';
+        }
+        
+        return {
+          email: String(row['邮箱'] || row['email'] || '').trim(),
+          full_name: String(row['姓名'] || row['full_name'] || '').trim(),
+          role,
+          student_id: String(row['学号'] || row['student_id'] || '').trim() || undefined,
+          employee_id: String(row['工号'] || row['employee_id'] || '').trim() || undefined,
+          phone: String(row['电话'] || row['phone'] || '').trim() || undefined,
+          password: generatePassword(),
+          status: 'pending',
+        };
+      });
 
       // 验证必填字段
       const validUsers = parsedUsers.filter(u => u.email && u.full_name);
@@ -164,7 +173,7 @@ export function BatchImportUsers({ open, onOpenChange, onSuccess }: BatchImportU
             user_id: data.user.id,
             full_name: user.full_name,
             student_id: user.role === 'student' ? user.student_id : null,
-            employee_id: user.role === 'teacher' ? user.employee_id : null,
+            employee_id: (user.role === 'teacher' || user.role === 'admin') ? user.employee_id : null,
             phone: user.phone || null,
           });
 
@@ -210,6 +219,14 @@ export function BatchImportUsers({ open, onOpenChange, onSuccess }: BatchImportU
         '工号': 'T001',
         '电话': '13900139000',
       },
+      {
+        '邮箱': 'admin@example.com',
+        '姓名': '王五',
+        '角色': '管理员',
+        '学号': '',
+        '工号': 'A001',
+        '电话': '13700137000',
+      },
     ];
 
     const ws = XLSX.utils.json_to_sheet(templateData);
@@ -218,11 +235,19 @@ export function BatchImportUsers({ open, onOpenChange, onSuccess }: BatchImportU
     XLSX.writeFile(wb, '用户导入模板.xlsx');
   };
 
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin': return '管理员';
+      case 'teacher': return '教师';
+      default: return '学生';
+    }
+  };
+
   const handleDownloadResults = () => {
     const resultsData = importResults.map(r => ({
       '邮箱': r.email,
       '姓名': r.full_name,
-      '角色': r.role === 'student' ? '学生' : '教师',
+      '角色': getRoleLabel(r.role),
       '初始密码': r.password,
       '导入状态': r.status === 'success' ? '成功' : '失败',
       '错误信息': r.error || '',
@@ -303,9 +328,9 @@ export function BatchImportUsers({ open, onOpenChange, onSuccess }: BatchImportU
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• <strong>邮箱</strong>（必填）：用户登录邮箱</li>
                   <li>• <strong>姓名</strong>（必填）：用户真实姓名</li>
-                  <li>• <strong>角色</strong>：学生 或 教师，默认为学生</li>
+                  <li>• <strong>角色</strong>：学生、教师 或 管理员，默认为学生</li>
                   <li>• <strong>学号</strong>：学生填写</li>
-                  <li>• <strong>工号</strong>：教师填写</li>
+                  <li>• <strong>工号</strong>：教师/管理员填写</li>
                   <li>• <strong>电话</strong>：联系电话（可选）</li>
                 </ul>
               </div>
@@ -336,8 +361,8 @@ export function BatchImportUsers({ open, onOpenChange, onSuccess }: BatchImportU
                         <TableCell className="font-mono text-sm">{user.email}</TableCell>
                         <TableCell>{user.full_name}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {user.role === 'student' ? '学生' : '教师'}
+                          <Badge variant={user.role === 'admin' ? 'destructive' : 'outline'}>
+                            {getRoleLabel(user.role)}
                           </Badge>
                         </TableCell>
                         <TableCell>
