@@ -195,17 +195,17 @@ export default function Evaluations() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">平均分</p>
-                <p className={`text-3xl font-bold mt-1 ${getScoreColor(stats.averageScore)}`}>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">平均分</p>
+                <p className={`text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1 ${getScoreColor(stats.averageScore)}`}>
                   {stats.averageScore || '--'}
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-12 w-12 rounded-xl bg-primary/10 items-center justify-center">
                 <BarChart3 className="h-6 w-6 text-primary" />
               </div>
             </div>
@@ -213,15 +213,15 @@ export default function Evaluations() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">最高分</p>
-                <p className="text-3xl font-bold mt-1 text-success">
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">最高分</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1 text-success">
                   {stats.highestScore || '--'}
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-12 w-12 rounded-xl bg-success/10 items-center justify-center">
                 <Award className="h-6 w-6 text-success" />
               </div>
             </div>
@@ -229,13 +229,13 @@ export default function Evaluations() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">评价总数</p>
-                <p className="text-3xl font-bold mt-1">{stats.totalEvaluations}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">评价总数</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1">{stats.totalEvaluations}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-12 w-12 rounded-xl bg-info/10 items-center justify-center">
                 <Star className="h-6 w-6 text-info" />
               </div>
             </div>
@@ -243,20 +243,20 @@ export default function Evaluations() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">近期趋势</p>
-                <p className="text-xl font-bold mt-1 flex items-center gap-1">
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">近期趋势</p>
+                <p className="text-lg sm:text-xl font-bold mt-0.5 sm:mt-1 flex items-center justify-center sm:justify-start gap-1">
                   {stats.recentTrend === 'up' && (
                     <>
-                      <TrendingUp className="h-5 w-5 text-success" />
+                      <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                       <span className="text-success">上升</span>
                     </>
                   )}
                   {stats.recentTrend === 'down' && (
                     <>
-                      <TrendingUp className="h-5 w-5 text-destructive rotate-180" />
+                      <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-destructive rotate-180" />
                       <span className="text-destructive">下降</span>
                     </>
                   )}
@@ -265,7 +265,7 @@ export default function Evaluations() {
                   )}
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-12 w-12 rounded-xl bg-warning/10 items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-warning" />
               </div>
             </div>
