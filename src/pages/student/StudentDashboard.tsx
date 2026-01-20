@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { AiTutor } from '@/components/student/AiTutor';
 
 interface TodayTask {
   id: string;
@@ -365,6 +366,9 @@ export default function StudentDashboard() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* AI 答疑助手浮动按钮 */}
+      <AiTutor />
     </div>
   );
 }
