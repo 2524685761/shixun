@@ -619,15 +619,15 @@ export default function CourseManagement() {
         {/* 课程任务 Tab */}
         <TabsContent value="courses" className="space-y-6">
           {/* 统计卡片 */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">专业数</p>
-                    <p className="text-2xl font-bold mt-1">{majors.length}</p>
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xs sm:text-sm text-muted-foreground">专业数</p>
+                    <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{majors.length}</p>
                   </div>
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="hidden sm:flex h-10 w-10 rounded-lg bg-primary/10 items-center justify-center">
                     <GraduationCap className="h-5 w-5 text-primary" />
                   </div>
                 </div>
@@ -635,13 +635,13 @@ export default function CourseManagement() {
             </Card>
 
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">课程数</p>
-                    <p className="text-2xl font-bold mt-1">{totalCourses}</p>
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xs sm:text-sm text-muted-foreground">课程数</p>
+                    <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{totalCourses}</p>
                   </div>
-                  <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+                  <div className="hidden sm:flex h-10 w-10 rounded-lg bg-success/10 items-center justify-center">
                     <BookOpen className="h-5 w-5 text-success" />
                   </div>
                 </div>
@@ -649,13 +649,13 @@ export default function CourseManagement() {
             </Card>
 
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">任务数</p>
-                    <p className="text-2xl font-bold mt-1">{totalTasks}</p>
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xs sm:text-sm text-muted-foreground">任务数</p>
+                    <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{totalTasks}</p>
                   </div>
-                  <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <div className="hidden sm:flex h-10 w-10 rounded-lg bg-warning/10 items-center justify-center">
                     <ClipboardList className="h-5 w-5 text-warning" />
                   </div>
                 </div>
@@ -703,28 +703,28 @@ export default function CourseManagement() {
                       </AccordionTrigger>
                       <AccordionContent className="pt-4 space-y-4">
                         {/* Major actions */}
-                        <div className="flex gap-2 pb-4 border-b">
+                        <div className="flex flex-wrap gap-2 pb-4 border-b">
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => openMajorDialog(major)}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            编辑专业
+                            <Edit className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">编辑专业</span>
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => openCourseDialog(major.id)}
                           >
-                            <Plus className="h-4 w-4 mr-1" />
-                            添加课程
+                            <Plus className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">添加课程</span>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="outline" size="sm" className="text-destructive">
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                删除
+                                <Trash2 className="h-4 w-4 sm:mr-1" />
+                                <span className="hidden sm:inline">删除</span>
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -753,14 +753,14 @@ export default function CourseManagement() {
                         ) : (
                           <div className="space-y-3">
                             {major.courses.map((course) => (
-                              <div key={course.id} className="border rounded-lg p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <BookOpen className="h-4 w-4 text-success" />
+                              <div key={course.id} className="border rounded-lg p-3 sm:p-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <BookOpen className="h-4 w-4 text-success shrink-0" />
                                     <span className="font-medium">{course.name}</span>
-                                    <Badge variant="outline">{course.tasks.length} 个任务</Badge>
+                                    <Badge variant="outline" className="shrink-0">{course.tasks.length} 个任务</Badge>
                                   </div>
-                                  <div className="flex gap-1">
+                                  <div className="flex gap-1 shrink-0">
                                     <Button 
                                       variant="ghost" 
                                       size="icon"
@@ -810,24 +810,25 @@ export default function CourseManagement() {
 
                                 {/* Tasks */}
                                 {course.tasks.length > 0 && (
-                                  <div className="space-y-2 pl-6">
+                                  <div className="space-y-2 pl-2 sm:pl-6">
                                     {course.tasks.map((task) => (
                                       <div 
                                         key={task.id}
-                                        className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 text-sm"
+                                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 rounded-lg bg-secondary/30 text-sm"
                                       >
-                                        <div className="flex items-center gap-2">
-                                          <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                                          <span>{task.name}</span>
-                                          <Badge variant="secondary" className="text-xs">
+                                        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                          <ClipboardList className="h-4 w-4 text-muted-foreground shrink-0" />
+                                          <span className="truncate">{task.name}</span>
+                                          <Badge variant="secondary" className="text-xs shrink-0">
                                             {task.task_number}
                                           </Badge>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-muted-foreground text-xs flex items-center gap-1">
+                                        <div className="flex items-center gap-2 justify-between sm:justify-end pl-6 sm:pl-0">
+                                          <span className="text-muted-foreground text-xs flex items-center gap-1 whitespace-nowrap">
                                             <Calendar className="h-3 w-3" />
                                             {task.scheduled_date}
                                           </span>
+                                          <div className="flex gap-0.5">
                                           <Button 
                                             variant="ghost" 
                                             size="icon"
@@ -864,6 +865,7 @@ export default function CourseManagement() {
                                               </AlertDialogFooter>
                                             </AlertDialogContent>
                                           </AlertDialog>
+                                          </div>
                                         </div>
                                       </div>
                                     ))}

@@ -197,9 +197,9 @@ export default function StudentDashboard() {
 
       {/* 今日实训任务卡片 */}
       <Card className="overflow-hidden border-0 shadow-soft">
-        <div className="gradient-primary p-6 text-white">
-          <div className="flex items-start justify-between">
-            <div>
+        <div className="gradient-primary p-4 sm:p-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+            <div className="flex-1 min-w-0">
               <p className="text-sm opacity-90">今日实训任务</p>
               {mainTask ? (
                 <>
@@ -219,17 +219,17 @@ export default function StudentDashboard() {
               )}
             </div>
             {mainTask && (
-              <div className="text-right">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 text-sm">
+              <div className="shrink-0 mt-2 sm:mt-0">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 text-sm whitespace-nowrap">
                   {mainTask.isCheckedIn ? (
                     <>
                       <CheckCircle2 className="h-4 w-4" />
-                      已打卡
+                      <span>已打卡</span>
                     </>
                   ) : (
                     <>
                       <AlertCircle className="h-4 w-4" />
-                      待打卡
+                      <span>待打卡</span>
                     </>
                   )}
                 </span>

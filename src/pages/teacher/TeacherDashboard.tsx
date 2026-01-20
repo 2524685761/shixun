@@ -254,25 +254,25 @@ export default function TeacherDashboard() {
                 {pendingSubmissions.map((submission) => (
                   <div 
                     key={submission.id}
-                    className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/30 transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/30 transition-all"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <span className="text-sm font-medium text-primary">
                           {submission.profile?.full_name?.slice(0, 1) || '?'}
                         </span>
                       </div>
-                      <div>
-                        <p className="font-medium">{submission.profile?.full_name || '未知用户'}</p>
-                        <p className="text-sm text-muted-foreground">{submission.task?.name || '未知任务'}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">{submission.profile?.full_name || '未知用户'}</p>
+                        <p className="text-sm text-muted-foreground truncate">{submission.task?.name || '未知任务'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 pl-13 sm:pl-0">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
                         <Clock className="h-3 w-3" />
                         {getTimeAgo(submission.submitted_at)}
                       </span>
-                      <Badge variant="outline" className="text-warning border-warning/50">
+                      <Badge variant="outline" className="text-warning border-warning/50 whitespace-nowrap">
                         待评价
                       </Badge>
                     </div>

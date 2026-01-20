@@ -369,15 +369,15 @@ export default function UserManagement() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">学生</p>
-                <p className="text-2xl font-bold mt-1">{studentCount}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">学生</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{studentCount}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-primary/10 items-center justify-center">
                 <GraduationCap className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -385,13 +385,13 @@ export default function UserManagement() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">教师</p>
-                <p className="text-2xl font-bold mt-1">{teacherCount}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">教师</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{teacherCount}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-success/10 items-center justify-center">
                 <UserCog className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -399,13 +399,13 @@ export default function UserManagement() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">管理员</p>
-                <p className="text-2xl font-bold mt-1">{adminCount}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">管理员</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{adminCount}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-warning/10 items-center justify-center">
                 <Shield className="h-5 w-5 text-warning" />
               </div>
             </div>
@@ -458,36 +458,38 @@ export default function UserManagement() {
               {filteredUsers.map((user) => (
                 <div 
                   key={user.id}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
                 >
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-lg font-medium text-primary">
-                      {user.profile?.full_name?.slice(0, 1) || '?'}
-                    </span>
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-base sm:text-lg font-medium text-primary">
+                        {user.profile?.full_name?.slice(0, 1) || '?'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium truncate">{user.profile?.full_name || '未设置姓名'}</p>
+                        <Badge className={`${roleColors[user.role]} shrink-0`}>
+                          {getRoleIcon(user.role)}
+                          <span className="ml-1">{roleLabels[user.role]}</span>
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1 text-xs sm:text-sm text-muted-foreground">
+                        {user.role === 'student' && user.profile?.student_id && (
+                          <span className="whitespace-nowrap">学号: {user.profile.student_id}</span>
+                        )}
+                        {user.role === 'teacher' && user.profile?.employee_id && (
+                          <span className="whitespace-nowrap">工号: {user.profile.employee_id}</span>
+                        )}
+                        {user.profile?.phone && (
+                          <span className="whitespace-nowrap">电话: {user.profile.phone}</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{user.profile?.full_name || '未设置姓名'}</p>
-                      <Badge className={roleColors[user.role]}>
-                        {getRoleIcon(user.role)}
-                        <span className="ml-1">{roleLabels[user.role]}</span>
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                      {user.role === 'student' && user.profile?.student_id && (
-                        <span>学号: {user.profile.student_id}</span>
-                      )}
-                      {user.role === 'teacher' && user.profile?.employee_id && (
-                        <span>工号: {user.profile.employee_id}</span>
-                      )}
-                      {user.profile?.phone && (
-                        <span>电话: {user.profile.phone}</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-end gap-1 sm:gap-2 shrink-0">
                     <Button 
                       variant="ghost" 
                       size="icon"

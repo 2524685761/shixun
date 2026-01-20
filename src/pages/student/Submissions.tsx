@@ -364,15 +364,15 @@ export default function Submissions() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">总提交</p>
-                <p className="text-2xl font-bold mt-1">{submissions.length}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">总提交</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{submissions.length}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-primary/10 items-center justify-center">
                 <FileText className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -380,15 +380,15 @@ export default function Submissions() {
         </Card>
         
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">待评价</p>
-                <p className="text-2xl font-bold mt-1">
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">待评价</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">
                   {submissions.filter(s => s.status === 'pending').length}
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-warning/10 items-center justify-center">
                 <Clock className="h-5 w-5 text-warning" />
               </div>
             </div>
@@ -396,15 +396,15 @@ export default function Submissions() {
         </Card>
         
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">已评价</p>
-                <p className="text-2xl font-bold mt-1">
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">已评价</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">
                   {submissions.filter(s => s.status === 'evaluated').length}
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-success/10 items-center justify-center">
                 <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -413,7 +413,7 @@ export default function Submissions() {
       </div>
 
       {/* 提交列表 */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">我的提交记录</CardTitle>
           <CardDescription>

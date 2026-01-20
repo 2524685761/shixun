@@ -183,15 +183,15 @@ export default function Attendance() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">总打卡数</p>
-                <p className="text-2xl font-bold mt-1">{stats.total}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">总打卡数</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{stats.total}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-primary/10 items-center justify-center">
                 <Users className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -199,13 +199,13 @@ export default function Attendance() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">正常</p>
-                <p className="text-2xl font-bold mt-1 text-success">{stats.normal}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">正常</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 text-success">{stats.normal}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-success/10 items-center justify-center">
                 <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -213,13 +213,13 @@ export default function Attendance() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">迟到</p>
-                <p className="text-2xl font-bold mt-1 text-warning">{stats.late}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">迟到</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 text-warning">{stats.late}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-warning/10 items-center justify-center">
                 <Clock className="h-5 w-5 text-warning" />
               </div>
             </div>
@@ -227,13 +227,13 @@ export default function Attendance() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">缺勤</p>
-                <p className="text-2xl font-bold mt-1 text-destructive">{stats.absent}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">缺勤</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 text-destructive">{stats.absent}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-destructive/10 items-center justify-center">
                 <XCircle className="h-5 w-5 text-destructive" />
               </div>
             </div>
@@ -311,25 +311,25 @@ export default function Attendance() {
               {filteredCheckIns.map((record) => (
                 <div 
                   key={record.id}
-                  className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-sm font-medium text-primary">
                         {record.profile?.full_name?.slice(0, 1) || '?'}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-medium">{record.profile?.full_name || '未知用户'}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{record.profile?.full_name || '未知用户'}</p>
+                      <p className="text-sm text-muted-foreground truncate">
                         {record.profile?.student_id || '无学号'} · {record.task?.name}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 pl-13 sm:pl-0">
                     {getStatusBadge(record.status)}
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <p className="text-sm font-medium">
                         {format(parseISO(record.check_in_time), 'HH:mm')}
                       </p>

@@ -391,15 +391,15 @@ export default function TeacherEvaluations() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">总提交</p>
-                <p className="text-2xl font-bold mt-1">{submissions.length}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">总提交</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{submissions.length}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-primary/10 items-center justify-center">
                 <FileText className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -407,13 +407,13 @@ export default function TeacherEvaluations() {
         </Card>
 
         <Card className="border-warning/50 bg-warning/5">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">待评价</p>
-                <p className="text-2xl font-bold mt-1 text-warning">{pendingCount}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">待评价</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 text-warning">{pendingCount}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-warning/10 items-center justify-center">
                 <Clock className="h-5 w-5 text-warning" />
               </div>
             </div>
@@ -421,13 +421,13 @@ export default function TeacherEvaluations() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">已评价</p>
-                <p className="text-2xl font-bold mt-1 text-success">{evaluatedCount}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">已评价</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 text-success">{evaluatedCount}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-success/10 items-center justify-center">
                 <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -526,55 +526,59 @@ export default function TeacherEvaluations() {
               {filteredSubmissions.map((submission) => (
                 <div 
                   key={submission.id}
-                  className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                  className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 rounded-xl border transition-all ${
                     selectedIds.has(submission.id)
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/30'
                   }`}
                 >
-                  {submission.status === 'pending' && (
-                    <Checkbox
-                      checked={selectedIds.has(submission.id)}
-                      onCheckedChange={() => toggleSelect(submission.id)}
-                    />
-                  )}
-                  
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-sm font-medium text-primary">
-                      {submission.profile?.full_name?.slice(0, 1) || '?'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{submission.profile?.full_name || '未知用户'}</p>
-                      <Badge variant={submission.status === 'pending' ? 'outline' : 'secondary'}>
-                        {submission.status === 'pending' ? '待评价' : '已评价'}
-                      </Badge>
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {submission.status === 'pending' && (
+                      <Checkbox
+                        checked={selectedIds.has(submission.id)}
+                        onCheckedChange={() => toggleSelect(submission.id)}
+                        className="shrink-0"
+                      />
+                    )}
+                    
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-sm font-medium text-primary">
+                        {submission.profile?.full_name?.slice(0, 1) || '?'}
+                      </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {submission.task?.course?.name} · {submission.task?.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                      {submission.content}
-                    </p>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium truncate">{submission.profile?.full_name || '未知用户'}</p>
+                        <Badge variant={submission.status === 'pending' ? 'outline' : 'secondary'} className="shrink-0">
+                          {submission.status === 'pending' ? '待评价' : '已评价'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                        {submission.task?.course?.name} · {submission.task?.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-1 hidden sm:block">
+                        {submission.content}
+                      </p>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 pl-6 sm:pl-0">
+                    <p className="text-xs text-muted-foreground whitespace-nowrap">
                       {format(parseISO(submission.submitted_at), 'MM/dd HH:mm')}
                     </p>
                     <Button 
                       variant="outline" 
                       size="sm"
+                      className="shrink-0"
                       onClick={() => {
                         setEvaluatingSubmission(submission);
                         setScore(80);
                         setComment('');
                       }}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
-                      {submission.status === 'pending' ? '评价' : '查看'}
+                      <Eye className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">{submission.status === 'pending' ? '评价' : '查看'}</span>
                     </Button>
                   </div>
                 </div>
