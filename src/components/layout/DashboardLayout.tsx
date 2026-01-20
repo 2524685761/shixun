@@ -68,7 +68,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, role, signOut } = useAuth();
+  const { user, role, profile, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,7 +82,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     navigate('/login');
   };
 
-  const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'U';
+  // 显示用户名称，如果没有则使用邮箱用户名部分
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || '用户';
 
   const NavLinks = ({ onItemClick }: { onItemClick?: () => void }) => (
     <nav className="space-y-1">
@@ -134,12 +135,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex items-center gap-3 px-2">
           <Avatar className="h-9 w-9">
             <AvatarFallback className="bg-primary/10 text-primary text-sm">
-              {userInitials}
+              <User className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">
-              {user?.email}
+              {displayName}
             </p>
             <p className="text-xs text-muted-foreground">
               {role && roleLabels[role]}
@@ -183,7 +184,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                    {userInitials}
+                    <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -214,10 +215,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Button variant="ghost" className="gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                    {userInitials}
+                    <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm">{user?.email}</span>
+                <span className="text-sm">{displayName}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
