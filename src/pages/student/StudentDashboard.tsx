@@ -38,7 +38,7 @@ interface Stats {
 }
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [todayTasks, setTodayTasks] = useState<TodayTask[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -185,7 +185,7 @@ export default function StudentDashboard() {
             {getGreeting()} 👋
           </h1>
           <p className="text-muted-foreground mt-1">
-            欢迎回来，{user?.email?.split('@')[0]}！今天也要加油哦~
+            欢迎回来，{profile?.full_name || user?.email?.split('@')[0]}！今天也要加油哦~
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

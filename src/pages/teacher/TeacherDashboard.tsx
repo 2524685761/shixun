@@ -31,7 +31,7 @@ interface PendingSubmission {
 }
 
 export default function TeacherDashboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     todayStudents: 0,
@@ -154,7 +154,7 @@ export default function TeacherDashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">
-            欢迎回来，老师 👨‍🏫
+            欢迎回来，{profile?.full_name || '老师'} 👨‍🏫
           </h1>
           <p className="text-muted-foreground mt-1">
             今天有 {stats.pendingEvaluations} 份成果等待您的评价

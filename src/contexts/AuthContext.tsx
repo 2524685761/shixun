@@ -4,14 +4,23 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type AppRole = 'student' | 'teacher' | 'admin';
 
+interface UserProfile {
+  full_name: string;
+  avatar_url: string | null;
+  student_id: string | null;
+  employee_id: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   role: AppRole | null;
+  profile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string, role: AppRole, studentId?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 获取用户角色
@@ -43,6 +53,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // 获取用户资料
+  const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url, student_id, employee_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+      
+      return data as UserProfile | null;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
+  // 刷新用户资料
+  const refreshProfile = async () => {
+    if (user?.id) {
+      const userProfile = await fetchUserProfile(user.id);
+      setProfile(userProfile);
+    }
+  };
+
   useEffect(() => {
     // 设置认证状态变化监听器 - 必须在 getSession 之前
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -53,12 +92,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           // 使用 setTimeout 避免 Supabase 内部死锁
           setTimeout(async () => {
-            const userRole = await fetchUserRole(session.user.id);
+            const [userRole, userProfile] = await Promise.all([
+              fetchUserRole(session.user.id),
+              fetchUserProfile(session.user.id)
+            ]);
             setRole(userRole);
+            setProfile(userProfile);
             setLoading(false);
           }, 0);
         } else {
           setRole(null);
+          setProfile(null);
           setLoading(false);
         }
       }
@@ -70,8 +114,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRole(session.user.id).then(userRole => {
+        Promise.all([
+          fetchUserRole(session.user.id),
+          fetchUserProfile(session.user.id)
+        ]).then(([userRole, userProfile]) => {
           setRole(userRole);
+          setProfile(userProfile);
           setLoading(false);
         });
       } else {
@@ -157,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setSession(null);
     setRole(null);
+    setProfile(null);
   };
 
   return (
@@ -164,10 +213,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       session,
       role,
+      profile,
       loading,
       signIn,
       signUp,
       signOut,
+      refreshProfile,
     }}>
       {children}
     </AuthContext.Provider>
