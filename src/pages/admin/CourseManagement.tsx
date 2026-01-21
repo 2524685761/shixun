@@ -908,54 +908,75 @@ export default function CourseManagement() {
                   {teachers.map((teacher) => (
                     <div 
                       key={teacher.id}
-                      className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                      className="p-3 sm:p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
                     >
-                      <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center shrink-0">
-                        <span className="text-lg font-medium text-success">
-                          {teacher.full_name?.slice(0, 1) || '?'}
-                        </span>
+                      <div className="flex items-start sm:items-center gap-3">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+                          <span className="text-base sm:text-lg font-medium text-success">
+                            {teacher.full_name?.slice(0, 1) || '?'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-sm sm:text-base">{teacher.full_name}</p>
+                            {teacher.employee_id && (
+                              <Badge variant="outline" className="text-xs whitespace-nowrap">工号: {teacher.employee_id}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-2 mt-1.5 flex-wrap">
+                            {teacher.assignedCourseIds.length === 0 ? (
+                              <span className="text-xs sm:text-sm text-muted-foreground">未分配课程</span>
+                            ) : (
+                              <>
+                                <Badge className="bg-primary/10 text-primary text-xs whitespace-nowrap">
+                                  {teacher.assignedCourseIds.length} 门课程
+                                </Badge>
+                                <div className="hidden sm:flex items-center gap-1 flex-wrap">
+                                  {teacher.assignedCourseIds.slice(0, 2).map(courseId => {
+                                    const course = allCourses.find(c => c.id === courseId);
+                                    return course ? (
+                                      <Badge key={courseId} variant="secondary" className="text-xs whitespace-nowrap">
+                                        {course.name}
+                                      </Badge>
+                                    ) : null;
+                                  })}
+                                  {teacher.assignedCourseIds.length > 2 && (
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      +{teacher.assignedCourseIds.length - 2} 更多
+                                    </span>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 text-xs sm:text-sm"
+                          onClick={() => openTeacherAssignDialog(teacher)}
+                        >
+                          <Link className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                          <span className="hidden sm:inline">分配课程</span>
+                          <span className="sm:hidden">分配</span>
+                        </Button>
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium">{teacher.full_name}</p>
-                          {teacher.employee_id && (
-                            <Badge variant="outline">工号: {teacher.employee_id}</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          {teacher.assignedCourseIds.length === 0 ? (
-                            <span className="text-sm text-muted-foreground">未分配课程</span>
-                          ) : (
-                            <>
-                              <Badge className="bg-primary/10 text-primary">
-                                {teacher.assignedCourseIds.length} 门课程
+                      {/* Mobile: show courses below */}
+                      {teacher.assignedCourseIds.length > 0 && (
+                        <div className="sm:hidden mt-2 pt-2 border-t border-border/50 flex flex-wrap gap-1">
+                          {teacher.assignedCourseIds.map(courseId => {
+                            const course = allCourses.find(c => c.id === courseId);
+                            return course ? (
+                              <Badge key={courseId} variant="secondary" className="text-xs">
+                                {course.name}
                               </Badge>
-                              {teacher.assignedCourseIds.slice(0, 3).map(courseId => {
-                                const course = allCourses.find(c => c.id === courseId);
-                                return course ? (
-                                  <Badge key={courseId} variant="secondary" className="text-xs">
-                                    {course.name}
-                                  </Badge>
-                                ) : null;
-                              })}
-                              {teacher.assignedCourseIds.length > 3 && (
-                                <span className="text-xs text-muted-foreground">
-                                  +{teacher.assignedCourseIds.length - 3} 更多
-                                </span>
-                              )}
-                            </>
-                          )}
+                            ) : null;
+                          })}
                         </div>
-                      </div>
-                      
-                      <Button 
-                        variant="outline"
-                        onClick={() => openTeacherAssignDialog(teacher)}
-                      >
-                        <Link className="h-4 w-4 mr-2" />
-                        分配课程
-                      </Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -988,46 +1009,75 @@ export default function CourseManagement() {
                   {students.map((student) => (
                     <div 
                       key={student.id}
-                      className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                      className="p-3 sm:p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
                     >
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-lg font-medium text-primary">
-                          {student.full_name?.slice(0, 1) || '?'}
-                        </span>
+                      <div className="flex items-start sm:items-center gap-3">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <span className="text-base sm:text-lg font-medium text-primary">
+                            {student.full_name?.slice(0, 1) || '?'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-sm sm:text-base">{student.full_name}</p>
+                            {student.student_id && (
+                              <Badge variant="outline" className="text-xs whitespace-nowrap">学号: {student.student_id}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-2 mt-1.5 flex-wrap">
+                            {student.assignedCourseIds.length === 0 ? (
+                              <span className="text-xs sm:text-sm text-muted-foreground">未分配课程</span>
+                            ) : (
+                              <>
+                                <Badge className="bg-primary/10 text-primary text-xs whitespace-nowrap">
+                                  {student.assignedCourseIds.length} 门课程
+                                </Badge>
+                                <div className="hidden sm:flex items-center gap-1 flex-wrap">
+                                  {student.assignedCourseIds.slice(0, 2).map(courseId => {
+                                    const course = allCourses.find(c => c.id === courseId);
+                                    return course ? (
+                                      <Badge key={courseId} variant="secondary" className="text-xs whitespace-nowrap">
+                                        {course.name}
+                                      </Badge>
+                                    ) : null;
+                                  })}
+                                  {student.assignedCourseIds.length > 2 && (
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      +{student.assignedCourseIds.length - 2} 更多
+                                    </span>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 text-xs sm:text-sm"
+                          onClick={() => openStudentAssignDialog(student)}
+                        >
+                          <Link className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                          <span className="hidden sm:inline">分配课程</span>
+                          <span className="sm:hidden">分配</span>
+                        </Button>
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium">{student.full_name}</p>
-                          {student.student_id && (
-                            <Badge variant="outline">学号: {student.student_id}</Badge>
-                          )}
+                      {/* Mobile: show courses below */}
+                      {student.assignedCourseIds.length > 0 && (
+                        <div className="sm:hidden mt-2 pt-2 border-t border-border/50 flex flex-wrap gap-1">
+                          {student.assignedCourseIds.map(courseId => {
+                            const course = allCourses.find(c => c.id === courseId);
+                            return course ? (
+                              <Badge key={courseId} variant="secondary" className="text-xs">
+                                {course.name}
+                              </Badge>
+                            ) : null;
+                          })}
                         </div>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          {student.assignedCourseIds.length === 0 ? (
-                            <span className="text-sm text-muted-foreground">未分配课程</span>
-                          ) : (
-                            <>
-                              {student.assignedCourseIds.map(courseId => {
-                                const course = allCourses.find(c => c.id === courseId);
-                                return course ? (
-                                  <Badge key={courseId} className="bg-primary/10 text-primary">
-                                    {course.name}
-                                  </Badge>
-                                ) : null;
-                              })}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        variant="outline"
-                        onClick={() => openStudentAssignDialog(student)}
-                      >
-                        <Link className="h-4 w-4 mr-2" />
-                        分配课程
-                      </Button>
+                      )}
                     </div>
                   ))}
                 </div>
