@@ -13,11 +13,11 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
-  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { AiTutor } from '@/components/student/AiTutor';
+import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
 
 interface TodayTask {
   id: string;
@@ -168,11 +168,7 @@ export default function StudentDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const mainTask = todayTasks[0];
