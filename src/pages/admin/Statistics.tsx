@@ -258,22 +258,24 @@ export default function Statistics() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-safe">
       {/* 页面标题 */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" />
-            数据统计
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            实训教学数据可视化分析
-          </p>
+      <div className="flex flex-col gap-3 md:gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              数据统计
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
+              实训教学数据可视化分析
+            </p>
+          </div>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full sm:w-[150px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -283,7 +285,7 @@ export default function Statistics() {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" onClick={exportToCSV}>
+          <Button variant="outline" onClick={exportToCSV} className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
             导出数据
           </Button>
@@ -291,15 +293,15 @@ export default function Statistics() {
       </div>
 
       {/* 核心指标 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">学生总数</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalStudents}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">学生总数</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{stats.totalStudents}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-primary/10 items-center justify-center">
                 <Users className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -307,13 +309,13 @@ export default function Statistics() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">总打卡数</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalCheckIns}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">总打卡数</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{stats.totalCheckIns}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-success/10 items-center justify-center">
                 <ClipboardCheck className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -321,13 +323,13 @@ export default function Statistics() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">成果提交</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalSubmissions}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">成果提交</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{stats.totalSubmissions}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-info/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-info/10 items-center justify-center">
                 <BookOpen className="h-5 w-5 text-info" />
               </div>
             </div>
@@ -335,13 +337,13 @@ export default function Statistics() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">平均分</p>
-                <p className="text-2xl font-bold mt-1">{stats.averageScore || '--'}</p>
+          <CardContent className="p-3 sm:pt-6 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">平均分</p>
+                <p className="text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1">{stats.averageScore || '--'}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="hidden sm:flex h-10 w-10 rounded-lg bg-warning/10 items-center justify-center">
                 <Star className="h-5 w-5 text-warning" />
               </div>
             </div>
