@@ -141,21 +141,20 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-4">
       {/* 欢迎区域 */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl md:text-2xl font-bold">
             管理中心 🎯
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
             全校实训数据一览
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
+        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
           <span>{new Date().toLocaleDateString('zh-CN', { 
-            year: 'numeric', 
             month: 'long', 
             day: 'numeric',
             weekday: 'long'
@@ -164,15 +163,15 @@ export default function AdminDashboard() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">学生总数</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalStudents}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">学生总数</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.totalStudents}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-primary/10 items-center justify-center">
                 <GraduationCap className="h-6 w-6 text-primary" />
               </div>
             </div>
@@ -180,13 +179,13 @@ export default function AdminDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">教师总数</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalTeachers}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">教师总数</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.totalTeachers}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-success/10 items-center justify-center">
                 <Users className="h-6 w-6 text-success" />
               </div>
             </div>
@@ -194,13 +193,13 @@ export default function AdminDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">实训课程</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalCourses}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">实训课程</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.totalCourses}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-warning/10 items-center justify-center">
                 <BookOpen className="h-6 w-6 text-warning" />
               </div>
             </div>
@@ -208,13 +207,13 @@ export default function AdminDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">实训任务</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalTasks}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">实训任务</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.totalTasks}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-info/10 items-center justify-center">
                 <ClipboardCheck className="h-6 w-6 text-info" />
               </div>
             </div>
@@ -222,21 +221,21 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
         {/* 数据概览 */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
+        <Card className="lg:col-span-2 border-0 md:border shadow-none md:shadow-sm">
+          <CardHeader className="px-0 md:px-6">
+            <CardTitle className="text-base md:text-lg flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               本月数据概览
             </CardTitle>
-            <CardDescription>各项指标完成情况</CardDescription>
+            <CardDescription className="text-xs md:text-sm">各项指标完成情况</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 md:space-y-6 px-0 md:px-6">
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs md:text-sm">
                 <span className="flex items-center gap-2">
-                  <ClipboardCheck className="h-4 w-4 text-success" />
+                  <ClipboardCheck className="h-3.5 w-3.5 md:h-4 md:w-4 text-success" />
                   打卡率
                 </span>
                 <span className="font-medium">{overviewData.checkInRate}%</span>
@@ -245,9 +244,9 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs md:text-sm">
                 <span className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-info" />
+                  <BookOpen className="h-3.5 w-3.5 md:h-4 md:w-4 text-info" />
                   成果提交率
                 </span>
                 <span className="font-medium">{overviewData.submissionRate}%</span>
@@ -256,9 +255,9 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs md:text-sm">
                 <span className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-warning" />
+                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-warning" />
                   评价完成率
                 </span>
                 <span className="font-medium">{overviewData.evaluationRate}%</span>
@@ -266,7 +265,7 @@ export default function AdminDashboard() {
               <Progress value={overviewData.evaluationRate} className="h-2" />
             </div>
 
-            <Button asChild className="w-full mt-4">
+            <Button asChild className="w-full mt-4 h-10 md:h-11">
               <Link to="/admin/statistics">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 查看详细统计
@@ -276,63 +275,63 @@ export default function AdminDashboard() {
         </Card>
 
         {/* 快捷操作 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">快捷操作</CardTitle>
-            <CardDescription>管理功能入口</CardDescription>
+        <Card className="border-0 md:border shadow-none md:shadow-sm">
+          <CardHeader className="px-0 md:px-6">
+            <CardTitle className="text-base md:text-lg">快捷操作</CardTitle>
+            <CardDescription className="text-xs md:text-sm">管理功能入口</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="px-0 md:px-6">
+            <div className="space-y-2 md:space-y-3">
               <Link 
                 to="/admin/users"
-                className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-2.5 md:p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center">
-                  <Users className="h-5 w-5 text-white" />
+                <div className="h-9 w-9 md:h-10 md:w-10 rounded-lg gradient-primary flex items-center justify-center shrink-0">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">用户管理</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </Link>
 
               <Link 
                 to="/admin/courses"
-                className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-2.5 md:p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-success" />
+                <div className="h-9 w-9 md:h-10 md:w-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                  <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-success" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">课程管理</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </Link>
 
               <Link 
                 to="/admin/statistics"
-                className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-2.5 md:p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
-                  <BarChart3 className="h-5 w-5 text-warning" />
+                <div className="h-9 w-9 md:h-10 md:w-10 rounded-lg bg-warning/10 flex items-center justify-center shrink-0">
+                  <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-warning" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">数据统计</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </Link>
 
               <Link 
                 to="/admin/settings"
-                className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-2.5 md:p-3 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                  <Settings className="h-5 w-5 text-muted-foreground" />
+                <div className="h-9 w-9 md:h-10 md:w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <Settings className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">系统设置</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </Link>
             </div>
           </CardContent>

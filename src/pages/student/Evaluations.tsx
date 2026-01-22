@@ -182,14 +182,14 @@ export default function Evaluations() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-4">
       {/* 页面标题 */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Star className="h-6 w-6 text-primary" />
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <Star className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           评价查看
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
           查看教师对您实训成果的评价与反馈
         </p>
       </div>
@@ -308,72 +308,72 @@ export default function Evaluations() {
       )}
 
       {/* 评价列表 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">评价记录</CardTitle>
-          <CardDescription>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <CardTitle className="text-base md:text-lg">评价记录</CardTitle>
+          <CardDescription className="text-xs md:text-sm">
             按时间倒序排列的所有评价
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           {evaluations.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>暂无评价记录</p>
-              <p className="text-sm mt-1">完成实训任务后，等待老师评价</p>
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              <Star className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm md:text-base">暂无评价记录</p>
+              <p className="text-xs md:text-sm mt-1">完成实训任务后，等待老师评价</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {evaluations.map((evaluation) => {
                 const scoreLevel = getScoreLevel(evaluation.score);
                 
                 return (
                   <div 
                     key={evaluation.id}
-                    className="p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                    className="p-3 md:p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
                   >
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:gap-4">
                       {/* 分数区域 */}
-                      <div className="flex items-center md:flex-col md:items-center md:justify-center md:w-24 md:border-r md:pr-4">
-                        <span className={`text-4xl font-bold ${getScoreColor(evaluation.score)}`}>
+                      <div className="flex items-center gap-2 md:flex-col md:items-center md:justify-center md:w-24 md:border-r md:pr-4">
+                        <span className={`text-3xl md:text-4xl font-bold ${getScoreColor(evaluation.score)}`}>
                           {evaluation.score}
                         </span>
-                        <Badge className={`ml-2 md:ml-0 md:mt-2 ${scoreLevel.color}`}>
+                        <Badge className={`${scoreLevel.color} text-xs`}>
                           {scoreLevel.label}
                         </Badge>
                       </div>
                       
                       {/* 内容区域 */}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-medium">{evaluation.submission?.task?.name}</h3>
-                            <p className="text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-sm md:text-base truncate">{evaluation.submission?.task?.name}</h3>
+                            <p className="text-xs md:text-sm text-muted-foreground truncate">
                               {evaluation.submission?.task?.course?.name} · {evaluation.submission?.task?.task_number}
                             </p>
                           </div>
-                          <div className="text-right text-sm text-muted-foreground">
+                          <div className="text-right text-xs md:text-sm text-muted-foreground shrink-0">
                             <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
+                              <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               {format(parseISO(evaluation.created_at), 'MM/dd')}
                             </div>
                           </div>
                         </div>
                         
                         {evaluation.comment && (
-                          <div className="mt-3 p-3 rounded-lg bg-secondary/30">
+                          <div className="mt-2 md:mt-3 p-2 md:p-3 rounded-lg bg-secondary/30">
                             <div className="flex items-start gap-2">
-                              <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
-                              <div className="flex-1">
-                                <p className="text-sm text-muted-foreground mb-1">教师评语</p>
-                                <p className="text-sm">{evaluation.comment}</p>
+                              <MessageSquare className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground mt-0.5 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-muted-foreground mb-1">教师评语</p>
+                                <p className="text-xs md:text-sm">{evaluation.comment}</p>
                               </div>
                             </div>
                           </div>
                         )}
                         
                         {evaluation.teacher_profile && (
-                          <p className="mt-2 text-xs text-muted-foreground">
+                          <p className="mt-2 text-[10px] md:text-xs text-muted-foreground">
                             评价教师：{evaluation.teacher_profile.full_name}
                           </p>
                         )}

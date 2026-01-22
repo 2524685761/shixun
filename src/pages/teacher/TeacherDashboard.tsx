@@ -145,33 +145,33 @@ export default function TeacherDashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-4">
       {/* 欢迎区域 */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl md:text-2xl font-bold">
             欢迎回来，{profile?.full_name || '老师'} 👨‍🏫
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
             今天有 {stats.pendingEvaluations} 份成果等待您的评价
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <span>{format(new Date(), 'yyyy年MM月dd日 EEEE', { locale: zhCN })}</span>
+        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
+          <span>{format(new Date(), 'MM月dd日 EEEE', { locale: zhCN })}</span>
         </div>
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">学生总数</p>
-                <p className="text-2xl font-bold mt-1">{stats.todayStudents}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">学生总数</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.todayStudents}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-primary/10 items-center justify-center">
                 <Users className="h-6 w-6 text-primary" />
               </div>
             </div>
@@ -179,16 +179,16 @@ export default function TeacherDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">今日打卡</p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <p className="text-2xl font-bold">{stats.checkedIn}</p>
-                  <span className="text-sm text-muted-foreground">/ {stats.todayStudents}</span>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">今日打卡</p>
+                <div className="flex items-baseline justify-center md:justify-start gap-1 mt-0.5">
+                  <p className="text-xl md:text-2xl font-bold">{stats.checkedIn}</p>
+                  <span className="text-xs md:text-sm text-muted-foreground">/ {stats.todayStudents}</span>
                 </div>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-success/10 items-center justify-center">
                 <ClipboardCheck className="h-6 w-6 text-success" />
               </div>
             </div>
@@ -196,13 +196,13 @@ export default function TeacherDashboard() {
         </Card>
 
         <Card className="card-hover border-warning/50 bg-warning/5">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">待评价</p>
-                <p className="text-2xl font-bold mt-1 text-warning">{stats.pendingEvaluations}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">待评价</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5 text-warning">{stats.pendingEvaluations}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-warning/10 items-center justify-center">
                 <AlertCircle className="h-6 w-6 text-warning" />
               </div>
             </div>
@@ -210,13 +210,13 @@ export default function TeacherDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">今日已评</p>
-                <p className="text-2xl font-bold mt-1">{stats.evaluatedToday}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">今日已评</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.evaluatedToday}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-info/10 items-center justify-center">
                 <Star className="h-6 w-6 text-info" />
               </div>
             </div>
@@ -224,51 +224,51 @@ export default function TeacherDashboard() {
         </Card>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
         {/* 待评价成果 */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="border-0 md:border shadow-none md:shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between px-0 md:px-6">
             <div>
-              <CardTitle className="text-lg">待评价成果</CardTitle>
-              <CardDescription>最新提交的学生作品</CardDescription>
+              <CardTitle className="text-base md:text-lg">待评价成果</CardTitle>
+              <CardDescription className="text-xs md:text-sm">最新提交的学生作品</CardDescription>
             </div>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
               <Link to="/teacher/evaluations">
                 查看全部
-                <ArrowRight className="ml-1 h-4 w-4" />
+                <ArrowRight className="ml-1 h-3 w-3 md:h-4 md:w-4" />
               </Link>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0 md:px-6">
             {pendingSubmissions.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Star className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                <p>暂无待评价成果</p>
+              <div className="text-center py-6 md:py-8 text-muted-foreground">
+                <Star className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">暂无待评价成果</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {pendingSubmissions.map((submission) => (
                   <div 
                     key={submission.id}
-                    className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/30 transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3 p-2.5 md:p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/30 transition-all"
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-sm font-medium text-primary">
+                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                      <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-xs md:text-sm font-medium text-primary">
                           {submission.profile?.full_name?.slice(0, 1) || '?'}
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">{submission.profile?.full_name || '未知用户'}</p>
-                        <p className="text-sm text-muted-foreground truncate">{submission.task?.name || '未知任务'}</p>
+                        <p className="font-medium text-sm truncate">{submission.profile?.full_name || '未知用户'}</p>
+                        <p className="text-xs text-muted-foreground truncate">{submission.task?.name || '未知任务'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 pl-13 sm:pl-0">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
+                    <div className="flex items-center justify-between sm:justify-end gap-2 pl-10 sm:pl-0">
+                      <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
                         <Clock className="h-3 w-3" />
                         {getTimeAgo(submission.submitted_at)}
                       </span>
-                      <Badge variant="outline" className="text-warning border-warning/50 whitespace-nowrap">
+                      <Badge variant="outline" className="text-warning border-warning/50 text-[10px] md:text-xs whitespace-nowrap">
                         待评价
                       </Badge>
                     </div>
@@ -280,53 +280,53 @@ export default function TeacherDashboard() {
         </Card>
 
         {/* 快捷操作 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">快捷操作</CardTitle>
-            <CardDescription>常用功能快速入口</CardDescription>
+        <Card className="border-0 md:border shadow-none md:shadow-sm">
+          <CardHeader className="px-0 md:px-6">
+            <CardTitle className="text-base md:text-lg">快捷操作</CardTitle>
+            <CardDescription className="text-xs md:text-sm">常用功能快速入口</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="px-0 md:px-6">
+            <div className="space-y-2 md:space-y-3">
               <Link 
                 to="/teacher/evaluations"
-                className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
-                  <Star className="h-6 w-6 text-white" />
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                  <Star className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium">成果评价</p>
-                  <p className="text-sm text-muted-foreground">批量评价学生作品</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm md:text-base">成果评价</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">批量评价学生作品</p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
               </Link>
 
               <Link 
                 to="/teacher/attendance"
-                className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
-                  <ClipboardCheck className="h-6 w-6 text-success" />
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                  <ClipboardCheck className="h-5 w-5 md:h-6 md:w-6 text-success" />
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium">考勤管理</p>
-                  <p className="text-sm text-muted-foreground">查看学生打卡情况</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm md:text-base">考勤管理</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">查看学生打卡情况</p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
               </Link>
 
               <Link 
                 to="/teacher/templates"
-                className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+                className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
               >
-                <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center">
-                  <BookOpen className="h-6 w-6 text-accent-foreground" />
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                  <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-accent-foreground" />
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium">评语模板</p>
-                  <p className="text-sm text-muted-foreground">管理常用评语</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm md:text-base">评语模板</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">管理常用评语</p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
               </Link>
             </div>
           </CardContent>

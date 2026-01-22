@@ -174,20 +174,20 @@ export default function StudentDashboard() {
   const mainTask = todayTasks[0];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-4">
       {/* 欢迎区域 */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl md:text-2xl font-bold">
             {getGreeting()} 👋
           </h1>
-          <p className="text-muted-foreground mt-1">
-            欢迎回来，{profile?.full_name || user?.email?.split('@')[0]}！今天也要加油哦~
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
+            欢迎回来，{profile?.full_name || user?.email?.split('@')[0]}！
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <span>{format(new Date(), 'yyyy年MM月dd日 EEEE', { locale: zhCN })}</span>
+        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
+          <span>{format(new Date(), 'MM月dd日 EEEE', { locale: zhCN })}</span>
         </div>
       </div>
 
@@ -252,15 +252,15 @@ export default function StudentDashboard() {
       </Card>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">总任务数</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalTasks}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">总任务</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.totalTasks}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-primary/10 items-center justify-center">
                 <Calendar className="h-6 w-6 text-primary" />
               </div>
             </div>
@@ -268,13 +268,13 @@ export default function StudentDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">已打卡</p>
-                <p className="text-2xl font-bold mt-1">{stats.completedCheckIns}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">已打卡</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.completedCheckIns}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-success/10 items-center justify-center">
                 <CheckCircle2 className="h-6 w-6 text-success" />
               </div>
             </div>
@@ -282,13 +282,13 @@ export default function StudentDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">待评价</p>
-                <p className="text-2xl font-bold mt-1">{stats.pendingEvaluations}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">待评价</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.pendingEvaluations}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-warning/10 items-center justify-center">
                 <Star className="h-6 w-6 text-warning" />
               </div>
             </div>
@@ -296,13 +296,13 @@ export default function StudentDashboard() {
         </Card>
 
         <Card className="card-hover">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">平均分</p>
-                <p className="text-2xl font-bold mt-1">{stats.averageScore || '--'}</p>
+          <CardContent className="p-3 md:pt-6 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-2">
+              <div className="text-center md:text-left">
+                <p className="text-xs md:text-sm text-muted-foreground">平均分</p>
+                <p className="text-xl md:text-2xl font-bold mt-0.5">{stats.averageScore || '--'}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center">
+              <div className="hidden md:flex h-12 w-12 rounded-xl bg-info/10 items-center justify-center">
                 <Star className="h-6 w-6 text-info" />
               </div>
             </div>
@@ -311,53 +311,53 @@ export default function StudentDashboard() {
       </div>
 
       {/* 快捷操作 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">快捷操作</CardTitle>
-          <CardDescription>常用功能快速入口</CardDescription>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6 pb-2 md:pb-4">
+          <CardTitle className="text-base md:text-lg">快捷操作</CardTitle>
+          <CardDescription className="text-xs md:text-sm">常用功能快速入口</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="px-0 md:px-6">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-4">
             <Link 
               to="/student/check-in"
-              className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+              className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
             >
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <ClipboardCheck className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <ClipboardCheck className="h-5 w-5 md:h-6 md:w-6 text-primary" />
               </div>
-              <div className="flex-1">
-                <p className="font-medium">实训打卡</p>
-                <p className="text-sm text-muted-foreground">签到记录考勤</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm md:text-base">实训打卡</p>
+                <p className="text-xs md:text-sm text-muted-foreground">签到记录考勤</p>
               </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
             </Link>
 
             <Link 
               to="/student/submissions"
-              className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+              className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
             >
-              <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center group-hover:bg-accent/80 transition-colors">
-                <Upload className="h-6 w-6 text-accent-foreground" />
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                <Upload className="h-5 w-5 md:h-6 md:w-6 text-accent-foreground" />
               </div>
-              <div className="flex-1">
-                <p className="font-medium">成果提交</p>
-                <p className="text-sm text-muted-foreground">上传实训作品</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm md:text-base">成果提交</p>
+                <p className="text-xs md:text-sm text-muted-foreground">上传实训作品</p>
               </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
             </Link>
 
             <Link 
               to="/student/evaluations"
-              className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group"
+              className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition-all group active:scale-[0.98]"
             >
-              <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center group-hover:bg-warning/20 transition-colors">
-                <Star className="h-6 w-6 text-warning" />
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
+                <Star className="h-5 w-5 md:h-6 md:w-6 text-warning" />
               </div>
-              <div className="flex-1">
-                <p className="font-medium">评价查看</p>
-                <p className="text-sm text-muted-foreground">查看老师评价</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm md:text-base">评价查看</p>
+                <p className="text-xs md:text-sm text-muted-foreground">查看老师评价</p>
               </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
             </Link>
           </div>
         </CardContent>
