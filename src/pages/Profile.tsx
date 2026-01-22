@@ -201,25 +201,25 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
+    <div className="space-y-4 md:space-y-6 animate-fade-in max-w-2xl mx-auto pb-4">
       {/* 页面标题 */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <User className="h-6 w-6 text-primary" />
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <User className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           个人资料
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
           管理您的个人信息和账号设置
         </p>
       </div>
 
       {/* 头像卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">头像</CardTitle>
-          <CardDescription>点击头像更换照片</CardDescription>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <CardTitle className="text-base md:text-lg">头像</CardTitle>
+          <CardDescription className="text-xs md:text-sm">点击头像更换照片</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           <div className="flex items-center gap-6">
             <div className="relative group">
               <Avatar className="h-24 w-24 cursor-pointer" onClick={handleAvatarClick}>
@@ -261,12 +261,12 @@ export default function ProfilePage() {
       </Card>
 
       {/* 基本信息卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">基本信息</CardTitle>
-          <CardDescription>更新您的个人基本信息</CardDescription>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <CardTitle className="text-base md:text-lg">基本信息</CardTitle>
+          <CardDescription className="text-xs md:text-sm">更新您的个人基本信息</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-0 md:px-6">
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />

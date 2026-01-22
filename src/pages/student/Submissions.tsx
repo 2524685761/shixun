@@ -252,27 +252,27 @@ export default function Submissions() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-4">
       {/* 页面标题 */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Upload className="h-6 w-6 text-primary" />
+          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+            <Upload className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             成果提交
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
             提交实训任务完成成果，等待老师评价
           </p>
         </div>
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gradient-primary text-white">
+            <Button className="w-full md:w-auto gradient-primary text-white h-11 md:h-10">
               <Plus className="h-4 w-4 mr-2" />
               提交新成果
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>提交实训成果</DialogTitle>
               <DialogDescription>
@@ -410,19 +410,19 @@ export default function Submissions() {
       </div>
 
       {/* 提交列表 */}
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg">我的提交记录</CardTitle>
-          <CardDescription>
+      <Card className="overflow-hidden border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <CardTitle className="text-base md:text-lg">我的提交记录</CardTitle>
+          <CardDescription className="text-xs md:text-sm">
             查看所有已提交的实训成果
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           {submissions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Upload className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>暂无提交记录</p>
-              <p className="text-sm mt-1">点击"提交新成果"开始提交</p>
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              <Upload className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm md:text-base">暂无提交记录</p>
+              <p className="text-xs md:text-sm mt-1">点击"提交新成果"开始提交</p>
             </div>
           ) : (
             <div className="space-y-4">

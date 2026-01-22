@@ -170,14 +170,14 @@ export default function Attendance() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-4">
       {/* 页面标题 */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ClipboardCheck className="h-6 w-6 text-primary" />
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <ClipboardCheck className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           考勤管理
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
           查看和管理学生考勤记录
         </p>
       </div>
@@ -242,15 +242,15 @@ export default function Attendance() {
       </div>
 
       {/* 筛选条件 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6 pb-2 md:pb-4">
+          <CardTitle className="text-base md:text-lg flex items-center gap-2">
+            <Filter className="h-4 w-4 md:h-5 md:w-5" />
             筛选条件
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="px-0 md:px-6">
+          <div className="flex flex-col gap-3 md:flex-row md:gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -293,18 +293,18 @@ export default function Attendance() {
       </Card>
 
       {/* 打卡记录列表 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">打卡记录</CardTitle>
-          <CardDescription>
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <CardTitle className="text-base md:text-lg">打卡记录</CardTitle>
+          <CardDescription className="text-xs md:text-sm">
             共 {filteredCheckIns.length} 条记录
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           {filteredCheckIns.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <ClipboardCheck className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>暂无打卡记录</p>
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              <ClipboardCheck className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm md:text-base">暂无打卡记录</p>
             </div>
           ) : (
             <div className="space-y-3">
