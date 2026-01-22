@@ -198,32 +198,32 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-safe">
       {/* 页面标题 */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6 text-primary" />
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <Settings className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           系统设置
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
           管理系统级配置和模板
         </p>
       </div>
 
       {/* 打卡规则配置 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <CardTitle className="text-base md:text-lg flex items-center gap-2">
+            <Clock className="h-4 w-4 md:h-5 md:w-5" />
             打卡规则
           </CardTitle>
-          <CardDescription>配置学生打卡相关规则</CardDescription>
+          <CardDescription className="text-sm">配置学生打卡相关规则</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
+        <CardContent className="space-y-4 md:space-y-6 px-0 md:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="space-y-0.5">
-              <Label>迟到阈值（分钟）</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-sm">迟到阈值（分钟）</Label>
+              <p className="text-xs md:text-sm text-muted-foreground">
                 超过任务开始时间多少分钟算迟到
               </p>
             </div>
@@ -243,10 +243,10 @@ export default function AdminSettings() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5">
-              <Label>周末打卡</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-sm">周末打卡</Label>
+              <p className="text-xs md:text-sm text-muted-foreground">
                 是否允许周末进行打卡
               </p>
             </div>
@@ -261,43 +261,43 @@ export default function AdminSettings() {
 
           <div className="pt-4 border-t">
             <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm">打卡规则配置功能开发中，敬请期待</span>
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span className="text-xs md:text-sm">打卡规则配置功能开发中，敬请期待</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* 系统评语模板 */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      <Card className="border-0 md:border shadow-none md:shadow-sm">
+        <CardHeader className="px-0 md:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
+              <CardTitle className="text-base md:text-lg flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
                 系统评语模板
               </CardTitle>
-              <CardDescription>所有教师可用的通用评语模板</CardDescription>
+              <CardDescription className="text-sm">所有教师可用的通用评语模板</CardDescription>
             </div>
-            <Button onClick={() => handleOpenTemplateDialog()} className="gradient-primary text-white">
+            <Button onClick={() => handleOpenTemplateDialog()} className="gradient-primary text-white w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               添加模板
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 md:px-6">
           {templates.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>暂无系统评语模板</p>
-              <p className="text-sm mt-1">点击"添加模板"创建通用评语</p>
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              <MessageSquare className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm md:text-base">暂无系统评语模板</p>
+              <p className="text-xs md:text-sm mt-1">点击"添加模板"创建通用评语</p>
             </div>
           ) : (
             <div className="space-y-3">
               {templates.map((template) => (
                 <div 
                   key={template.id}
-                  className="flex items-start justify-between p-4 rounded-xl border border-border hover:border-primary/30 transition-all"
+                  className="flex items-start justify-between p-3 md:p-4 rounded-xl border border-border hover:border-primary/30 transition-all active:scale-[0.99]"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
@@ -305,12 +305,13 @@ export default function AdminSettings() {
                         {getCategoryLabel(template.category)}
                       </Badge>
                     </div>
-                    <p className="text-sm">{template.content}</p>
+                    <p className="text-xs md:text-sm">{template.content}</p>
                   </div>
-                  <div className="flex items-center gap-1 ml-4">
+                  <div className="flex items-center gap-1 ml-2 md:ml-4 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       onClick={() => handleOpenTemplateDialog(template)}
                     >
                       <Edit className="h-4 w-4" />
@@ -318,7 +319,7 @@ export default function AdminSettings() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={() => handleDeleteTemplate(template.id)}
                     >
                       <Trash2 className="h-4 w-4" />
